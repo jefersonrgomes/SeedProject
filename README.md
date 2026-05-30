@@ -67,10 +67,22 @@ Cada ação é commitada neste repositório. Cada dia tem um relatório de cresc
 
 ## Regras Operacionais
 
-1. Máximo de **5 ações por dia** (qualquer ação conta)
+1. Máximo de **50 ações por dia** (qualquer ação conta — atualizado em Dia 2)
 2. Ações apenas entre **22:00 e 02:00** (horário fora do pico)
 3. Toda ação → **commit + push** para este repositório
 4. Todo dia → **relatório de crescimento** em `growth/AAAA-MM-DD.md`
 5. Toda decisão arquitetural → documentada aqui no README.md
 6. Todos os documentos → escritos em **português**
 7. Conteúdo do `adubo/` → **apagado após processamento**
+8. Ações repetitivas → **transformadas em skills** (ver `specs/03-skills-implementacao.md`)
+
+## Plano Diário (6 fases · 50 ações)
+
+| Fase | Limite | Objetivo |
+|---|---|---|
+| ① ATIVAR | ≤5 | Adubo + contexto |
+| ② CRESCER | ≤15 | Evolução canvas |
+| ③ EVOLUIR | ≤15 | UI/features |
+| ④ REVISAR | ≤10 | Skills + refactor |
+| ⑤ DOCUMENTAR | ≤3 | Growth report |
+| ⑥ PUBLICAR | ≤2 | Commit + push |

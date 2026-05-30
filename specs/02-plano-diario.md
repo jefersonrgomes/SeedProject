@@ -1,103 +1,161 @@
 ---
 tags: [spec, sdd, plano-diario, rotina, fase-0]
-relacionado: "[[specs/00-visao-geral]], [[CLAUDE]], [[specs/01-skills]]"
+relacionado: "[[specs/00-visao-geral]], [[CLAUDE]], [[specs/01-skills]], [[specs/03-skills-implementacao]]"
 status: ativo
-versão: 1.0
+versão: 2.0
 ---
-# Spec 02 — Plano Diário de Evolução (5 Passos)
+# Spec 02 — Plano Diário de Evolução (6 Fases · 50 Ações/Dia)
 
-> Veja também: [[CLAUDE]] | [[specs/00-visao-geral]] | [[specs/01-skills]]
+> Veja também: [[CLAUDE]] | [[specs/00-visao-geral]] | [[specs/03-skills-implementacao]]
 
 ## Regra fundamental
 
-Este plano executa **uma vez por dia**, entre 22:00 e 02:00.
-O adubo pode ser o trigger, mas **não é obrigatório** — o plano roda mesmo sem adubo novo.
-Se há adubo: o adubo define a pauta. Se não há: executar o plano padrão abaixo.
+- Executa **uma vez por dia**, entre 22:00 e 02:00
+- **Limite: 50 ações por dia** (v2.0 — atualizado pelo jardineiro)
+- Adubo é o trigger, mas não é obrigatório — o plano roda mesmo sem adubo
+- O plano inclui um passo de **REVISÃO** para transformar repetição em skills e agentes
 
 ---
 
-## Os 5 Passos
+## Distribuição de ações (50/dia)
 
-### Passo 1 — ATIVAR (5 min)
-
-**O que fazer:**
-1. Ler `growth/AAAA-MM-DD.md` do dia — quantas ações já foram usadas?
-2. Verificar `adubo/adubo.md` — há conteúdo novo?
-   - Se sim: o adubo define a pauta do dia (processe antes de avançar)
-   - Se não: seguir o plano padrão (passos 2 a 5)
-3. Definir o objetivo principal do dia em uma frase
-
-**Output:** clareza sobre o que será feito hoje.
+| Fase         | Ações  | Objetivo                              |
+|---|---|---|
+| ① ATIVAR     | ≤ 5    | Context, adubo, objetivo do dia       |
+| ② CRESCER    | ≤ 15   | Evolução visual do canvas             |
+| ③ EVOLUIR    | ≤ 15   | UI/UX/arquitetura/features            |
+| ④ REVISAR    | ≤ 10   | Eliminar repetição, skills, agentes   |
+| ⑤ DOCUMENTAR | ≤ 3    | Growth report, README                 |
+| ⑥ PUBLICAR   | ≤ 2    | Commit + push + verificar Pages       |
+| **Total**    | **50** |                                       |
 
 ---
 
-### Passo 2 — CRESCER (15 min)
+## Fase 1 — ATIVAR (≤5 ações)
 
-**O que fazer:**
-Adicionar ou evoluir **pelo menos 1 elemento visual** no canvas seguindo o roadmap:
+1. Ler `growth/AAAA-MM-DD.md` → quantas ações usadas? Qual foi o último passo?
+2. Verificar `adubo/adubo.md` → há adubo? Se sim: `/processar-adubo`
+3. Revisar o growth report de ontem → há algo pendente ou prometido?
+4. Verificar GitHub Actions → o último deploy foi bem-sucedido?
+5. Definir objetivo do dia em uma frase (registrar no growth report)
+
+**Output:** clareza total sobre o contexto antes de agir.
+
+---
+
+## Fase 2 — CRESCER (≤15 ações)
+
+Usar skill `/crescer-canvas`. Roadmap visual:
 
 ```
-Dia 0-1  → semente + raiz primária + minhoca         ✅ feito
-Dia 2-3  → raiz secundária + rachadura no solo
-Dia 4-5  → hipocótilo emerge (pixel acima da semente)
-Dia 7-10 → broto rompe a superfície
-Dia 14+  → cotilédones (primeiras folhas)
-Dia 20+  → caule cresce + sol aparece no topo
-Dia 30+  → planta completa + abelha + passarinho
-Dia 60+  → floração + janela + ambiente externo
+✅ Dia 0    → semente + raiz primária + minhoca
+✅ Dia 1    → raiz lateral + pelos radiculares
+✅ Dia 2    → rachadura no solo + céu dinâmico (estrelas/lua/sol)
+   Dia 2+   → hipocótilo emerge (pixel acima da semente)
+   Dia 3-5  → broto aparece acima do solo
+   Dia 7-10 → cotilédones (primeiras folhas)
+   Dia 14+  → caule cresce, sol grande no topo
+   Dia 20+  → múltiplas folhas, abelha passa
+   Dia 30+  → planta completa, vaso, janela
+   Dia 60+  → floração, borboleta, ambiente externo
 ```
 
-O elemento deve ser visualmente coerente com o estágio atual.
-Documentar a decisão visual no growth report.
+**Ações típicas desta fase:**
+- 2-3 ações: planejar o elemento (roadmap, coerência visual)
+- 6-8 ações: implementar no canvas JS
+- 2-3 ações: testar (verificar animação, cores, proporções)
+- 1-2 ações: documentar decisão
 
 ---
 
-### Passo 3 — EVOLUIR (15 min)
+## Fase 3 — EVOLUIR (≤15 ações)
 
-**O que fazer:**
-Melhorar **um aspecto** do hotsite ou da arquitetura:
+Melhorar um aspecto do hotsite, da arquitetura ou das features. Exemplos por nível de impacto:
 
-Exemplos (escolher o mais impactante do dia):
-- Nova animação com Motion (entrada, hover, transição)
-- Ajuste de layout ou tipografia
-- Novo conteúdo no sidebar (stats, links, info)
-- Melhoria de acessibilidade (aria-labels, contraste)
-- Refatoração de código para clareza
-- Avanço na implementação das Skills (Fase 1 SDD)
+**Alto impacto (priorize):**
+- Nova feature significativa (nova aba, novo sistema)
+- Mood-driven CSS variables (tema muda com o humor)
+- Visitante counter via localStorage
+- Compartilhamento de estado via URL hash
 
----
+**Médio impacto:**
+- Novas animações Motion (entrada de elementos, hover)
+- Melhoria de acessibilidade (aria, focus visible)
+- Responsividade mobile melhorada
 
-### Passo 4 — DOCUMENTAR (10 min)
-
-**O que fazer:**
-1. Criar ou atualizar `growth/AAAA-MM-DD.md` com:
-   - Ações do dia (N de 5)
-   - O que foi feito em cada passo
-   - Por que cada decisão foi tomada
-   - Estado do mundo ao final do dia
-   - Próximo passo
-2. Se houver nova decisão arquitetural: atualizar `README.md`
-3. Se houver mudança de fase: atualizar `specs/00-visao-geral.md`
+**Baixo impacto (só se não houver outra coisa):**
+- Ajustes de cor ou tipografia
+- Reformulação de texto em sidebars
 
 ---
 
-### Passo 5 — PUBLICAR (5 min)
+## Fase 4 — REVISAR (≤10 ações)
 
-**O que fazer:**
-1. `git add .`
-2. `git commit -m "feat/fix/docs: [descrição concisa]"`
-3. `git push` (com token — limpar URL após push)
-4. Verificar que GitHub Actions completou com sucesso
-5. Limpar `adubo/adubo.md` se havia adubo processado
+**Esta fase é nova e crítica.** Seu objetivo é evitar que o projeto acumule dívida técnica.
 
-**Output:** site atualizado em `jefersonrgomes.github.io/SeedProject`
+### O que revisar
+
+**Código repetitivo:**
+- Há funções canvas com lógica duplicada? → Extrair helper `px2` ou `sprite()`
+- Há seleções de DOM repetidas? → Cachear em constantes
+- Há strings repetidas (cores, textos)? → Mover para `P` (paleta) ou `CONFIG`
+
+**Padrões que viraram rotina:**
+- Toda vez que processo adubo, faço as mesmas 6 coisas → Verificar se a skill `/processar-adubo` cobre isso
+- Toda vez que publico, faço 5 passos iguais → Verificar se `/publicar` está completa
+
+**Specs desatualizadas:**
+- O roadmap do canvas em `specs/02-plano-diario.md` reflete o estado atual?
+- A Fase 0 de `specs/00-visao-geral.md` está marcada como ✅?
+
+**Ações típicas:**
+- 2-3 ações: ler código e identificar repetição
+- 3-4 ações: refatorar ou atualizar skill
+- 2-3 ações: verificar que nada quebrou + registrar
 
 ---
 
-## Critério de conclusão
+## Fase 5 — DOCUMENTAR (≤3 ações)
 
-O dia está completo quando:
-- ✅ Growth report escrito
-- ✅ Pelo menos 1 elemento visual evoluído (Passo 2) OU 1 melhoria UI (Passo 3)
-- ✅ Commit publicado no GitHub
-- ✅ Site funcionando em `jefersonrgomes.github.io/SeedProject`
+Usar skill `/growth-report`:
+
+1. Criar `growth/AAAA-MM-DD.md` com:
+   - Ações usadas (N/50)
+   - O que foi feito em cada fase
+   - Decisões arquiteturais + motivos
+   - Estado do mundo (árvore de arquivos relevantes)
+   - Próximo passo claro
+2. Se nova decisão arquitetural → atualizar `README.md`
+3. Se nova skill criada → atualizar `specs/03-skills-implementacao.md`
+
+---
+
+## Fase 6 — PUBLICAR (≤2 ações)
+
+Usar skill `/publicar`:
+
+1. `git add --all && git commit -m "[tipo](escopo): [descrição]"`
+2. Push com token → limpar URL → verificar GitHub Actions
+
+**Output:** `jefersonrgomes.github.io/SeedProject` atualizado.
+
+---
+
+## Critério de conclusão do dia
+
+- ✅ Growth report escrito com ações contadas
+- ✅ Pelo menos 1 elemento canvas evoluído OU 1 feature nova
+- ✅ Fase REVISAR executada (mesmo que não haja nada para refatorar — registrar)
+- ✅ Commit publicado + GitHub Pages online
+
+---
+
+## Quando usar agentes (Fase 3 do SDD)
+
+Quando uma tarefa de EVOLUIR for grande demais para uma sessão:
+- Split em sub-tarefas via `Agent tool`
+- Agente Animador → cuida de `drawFunctions` no canvas
+- Agente Documentador → cuida de `growth/` + `README.md`
+- Agente Arquivista → cuida de `conhecimento/` + `specs/`
+
+Usar quando a tarefa exceder ~15 ações de EVOLUIR.
