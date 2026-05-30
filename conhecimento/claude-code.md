@@ -1,7 +1,12 @@
+---
+tags: [conhecimento, claude-code, anthropic, ia]
+relacionado: "[[README]], [[CLAUDE]], [[specs/00-visao-geral]], [[growth/2026-05-29]]"
+---
 # Conhecimento: Claude Code
 
 > Fonte: https://code.claude.com/docs/pt/overview
 > Processado em: 2026-05-29
+> Veja também: [[specs/00-visao-geral]] | [[growth/2026-05-29]] | [[CLAUDE]]
 
 ## O que aprendi
 

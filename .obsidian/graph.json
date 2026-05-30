@@ -1,0 +1,28 @@
+{
+  "collapse-filter": false,
+  "search": "",
+  "showTags": true,
+  "showAttachments": false,
+  "hideUnresolved": false,
+  "showOrphans": true,
+  "collapse-color-groups": false,
+  "colorGroups": [
+    { "query": "path:growth/",       "color": { "a": 1, "rgb": 2263842  } },
+    { "query": "path:conhecimento/", "color": { "a": 1, "rgb": 3394611  } },
+    { "query": "path:specs/",        "color": { "a": 1, "rgb": 13408512 } },
+    { "query": "file:README",        "color": { "a": 1, "rgb": 9699539  } },
+    { "query": "file:CLAUDE",        "color": { "a": 1, "rgb": 16756224 } }
+  ],
+  "collapse-display": false,
+  "showArrow": true,
+  "textFadeMultiplier": 0,
+  "nodeSizeMultiplier": 1.2,
+  "lineSizeMultiplier": 1,
+  "collapse-forces": false,
+  "centerStrength": 0.5,
+  "repelStrength": 12,
+  "linkStrength": 1,
+  "linkDistance": 40,
+  "scale": 1,
+  "close": false
+}

@@ -4,3 +4,9 @@ Thumbs.db
 node_modules/
 .claude/
 .vscode/
+# Obsidian — arquivos locais de sessão (manter app.json e graph.json)
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/cache
+.obsidian/plugins/
+.obsidian/themes/

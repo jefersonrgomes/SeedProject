@@ -1,6 +1,12 @@
+---
+tags: [regras, contexto, operacional]
+relacionado: "[[README]], [[specs/00-visao-geral]]"
+---
 # CLAUDE.md — Projeto Semente
 
 Leia este arquivo inteiro antes de qualquer ação. Ele define o contexto operacional deste projeto.
+
+> Veja também: [[README]] | [[specs/00-visao-geral]] | [[conhecimento/claude-code]]
 
 ## Identidade
 
