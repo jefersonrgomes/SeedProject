@@ -48,17 +48,20 @@ versão: 2.0
 Usar skill `/crescer-canvas`. Roadmap visual:
 
 ```
-✅ Dia 0    → semente + raiz primária + minhoca
-✅ Dia 1    → raiz lateral + pelos radiculares
-✅ Dia 2    → rachadura no solo + céu dinâmico (estrelas/lua/sol)
-   Dia 2+   → hipocótilo emerge (pixel acima da semente)
-   Dia 3-5  → broto aparece acima do solo
-   Dia 7-10 → cotilédones (primeiras folhas)
-   Dia 14+  → caule cresce, sol grande no topo
-   Dia 20+  → múltiplas folhas, abelha passa
-   Dia 30+  → planta completa, vaso, janela
-   Dia 60+  → floração, borboleta, ambiente externo
+✅ Dia 0    → semente + raiz primária + minhoca + céu base
+✅ Dia 1    → raiz lateral + rachadura + estrelas/lua/sol + hotsite + chat + clima
+✅ Dia 1+   → hipocótilo etiolado + mood system + 6 skills + 50 ações/dia
+   Dia 2    → broto verde + cotilédones + mood-driven theme + refactor unificado
+   Dia 3    → cotilédones abertos + caule 3px + sol maior + vento animado
+   Dia 4    → 2 folhas verdes + abelha passando + nuvem
+   Dia 5    → planta com 4 folhas + pássaro + sombra
+   Dia 6    → vaso + janela ao fundo + luz ambiente
+   Dia 7    → floração (flor pixel) + borboleta + lua cheia
+   Dia 10+  → ecossistema completo (cena exterior animada)
 ```
+
+> ℹ️ Com 50 ações/dia, cada sessão avança 2-3 estágios. O critério de avanço
+> é: elemento implementado + documentado + publicado no GitHub.
 
 **Ações típicas desta fase:**
 - 2-3 ações: planejar o elemento (roadmap, coerência visual)

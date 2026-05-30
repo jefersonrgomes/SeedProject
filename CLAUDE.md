@@ -108,6 +108,21 @@ Use estas skills para evitar ações repetitivas. Cada skill é uma sequência c
 - `src/index.html` — hotsite + animação canvas.
 - `README.md` — sempre atualizado.
 
+## Comando: `evolua`
+
+Quando este comando for recebido (no adubo ou no terminal), executar imediatamente:
+
+```
+1. Ler o último growth report → identificar "Próximo passo (Dia X)"
+2. Executar TODOS os itens do próximo passo (usando as skills relevantes)
+3. Atualizar o roadmap visual se necessário (ver specs/02-plano-diario.md)
+4. Escrever growth report do dia com as ações executadas
+5. Commit + push (skill /publicar)
+6. Limpar adubo/adubo.md
+```
+
+Não perguntar confirmação. Agir autonomamente dentro do limite de 50 ações.
+
 ## Contagem de ações do dia atual
 
 Consulte o growth report do dia (`growth/AAAA-MM-DD.md`). Limite: **50 ações/dia**.

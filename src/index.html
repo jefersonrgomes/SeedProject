@@ -433,10 +433,10 @@
         <div class="block">
           <div class="label">fase</div>
           <div class="phase-row"><div class="dot"></div><span class="value">Fase 0 — Germinação</span></div>
-          <div class="progress-bar" title="Progresso até o broto">
-            <div class="progress-fill" id="stageFill" style="width:12%"></div>
+          <div class="progress-bar" title="Progresso até cotilédones">
+            <div class="progress-fill" id="stageFill" style="width:30%"></div>
           </div>
-          <div class="value dim" style="font-size:0.58rem">12% → broto</div>
+          <div class="value dim" style="font-size:0.58rem">30% → cotilédones</div>
         </div>
         <div class="block">
           <div class="label">humor</div>
@@ -485,14 +485,14 @@
           <div class="stat">📅 dia <span class="sv" id="statDay">0</span></div>
           <div class="stat">⎇ commits <span class="sv" id="statCommits">15</span></div>
           <div class="stat">🌿 raiz <span class="sv">5px</span></div>
-          <div class="stat">🌱 próximo <span class="sv">broto</span></div>
+          <div class="stat">🌱 próximo <span class="sv">cotilédones</span></div>
         </div>
         <div class="canvas-actions">
           <button class="btn-action" onclick="regar()">💧 regar</button>
           <button class="btn-action" onclick="acariciar()">🤍 carinho</button>
         </div>
         <div class="canvas-footer">
-          <span id="canvasLabel">semente · raiz · minhoca · rachadura · hipocótilo</span>
+          <span id="canvasLabel">semente · raiz · minhoca · broto verde · céu dinâmico</span>
           <span id="canvasDay">dia 0</span>
         </div>
       </section>
@@ -691,6 +691,20 @@
     if (clear)        return {emoji:'☀️', label:'Crescimento Radiante',desc:'Luz abundante, condições ideais.'};
     return               {emoji:'⛅', label:'Contemplação Serena',  desc:'Luz suave, crescimento paciente.'};
   }
+  // Mood-driven CSS variables — tema muda suavemente com o humor
+  const MOOD_THEMES = {
+    'Crescimento Radiante': { hi:'#8acc5a', gold:'#e0c468' },
+    'Energia Solar Plena':  { hi:'#a0dc4a', gold:'#f0d040' },
+    'Alegria da Chuva':     { hi:'#5abccc', gold:'#d8cc68' },
+    'Reflexão Fértil':      { hi:'#5ab0c0', gold:'#d0c068' },
+    'Silêncio Estelar':     { hi:'#6a8acc', gold:'#c8b868' },
+    'Força nas Raízes':     { hi:'#8060cc', gold:'#cca860' },
+    'Despertar Dourado':    { hi:'#c0cc5a', gold:'#f0d040' },
+    'Dormência Protetora':  { hi:'#5a9ab0', gold:'#c0b870' },
+    'Crepúsculo Fértil':    { hi:'#c08050', gold:'#e0b060' },
+    'Contemplação Serena':  { hi:'#7aaa6a', gold:'#d8c468' },
+  };
+
   function applyMood(m) {
     S.mood = m;
     document.getElementById('moodEmoji').textContent    = m.emoji;
@@ -698,6 +712,12 @@
     document.getElementById('moodDesc').textContent     = m.desc;
     document.getElementById('w-mood-label').textContent = `${m.emoji} ${m.label}`;
     document.getElementById('w-mood-desc').textContent  = m.desc;
+    // Aplica tema de cor baseado no humor
+    const theme = MOOD_THEMES[m.label];
+    if (theme) {
+      document.documentElement.style.setProperty('--accent-hi', theme.hi);
+      document.documentElement.style.setProperty('--gold',      theme.gold);
+    }
   }
   async function loadWorld() {
     if (!navigator.geolocation) { applyMood(getMood(1,22,new Date().getHours())); return; }
@@ -753,8 +773,13 @@
     rain:'#5a8ab0',  heart:'#e06080',
     star:'#c8d0e8',  moon:'#d0d8b0',  sun:'#f0d848',
     crack:'#1a0e04',
-    hypo:'#a0b840',  hypoTip:'#c4d850', // etiolado — cresceu sem luz
+    hypo:'#a0b840',   hypoTip:'#c4d850', // etiolado — cresceu sem luz
+    sprout:'#68a030', leaf:'#4a9020', stem:'#3a7018', // verde ao sol
   };
+
+  // CANVAS_STAGE — atualizado a cada /crescer-canvas
+  // 0=semente 1=germinando 2=emergindo 3=broto 4=cotilédones 5=folhas...
+  const CANVAS_STAGE = 3;
 
   let t=0;
 
@@ -816,17 +841,38 @@
     px(38,32,P.pebble);px(39,32,P.pebble);
   }
 
-  function drawCrack() {
-    px(23,29,P.crack,0.85); px(24,28,P.crack,0.7); px(25,29,P.crack,0.6);
-    px(24,29,P.crack,0.95);
-  }
+  // REVISAR: drawCrack + drawHypocotyl unificados em drawSprout(stage)
+  // stage 2=rachadura+hipocótilo 3=broto verde 4=cotilédones
+  function drawSprout(stage) {
+    const cx = 24;
+    const lp  = Math.sin(t * 0.025) > 0; // pulso lento
 
-  // Hipocótilo emergindo pela rachadura (etiolado — sem luz, amarelo-verde)
-  function drawHypocotyl() {
-    const pulse = Math.sin(t * 0.025) > 0; // pulso lento de crescimento
-    px(24, 29, P.hypo,    pulse ? 0.9 : 0.7);  // corpo principal na rachadura
-    px(24, 28, P.hypoTip, pulse ? 0.5 : 0.3);  // ponta mal saindo do solo
-    px(23, 29, P.hypo,    0.3);                 // pequena curvatura (hipocótilo curva para a luz)
+    if (stage >= 2) {
+      // Rachadura no solo
+      px(cx-1,29,P.crack,0.85); px(cx,28,P.crack,0.7); px(cx+1,29,P.crack,0.6);
+      px(cx,  29,P.crack,0.95);
+      // Hipocótilo etiolado (amarelo-verde — sem luz)
+      px(cx,  29,P.hypo,    lp ? 0.9 : 0.7);
+      px(cx,  28,P.hypoTip, lp ? 0.5 : 0.3);
+      px(cx-1,29,P.hypo,    0.3);
+    }
+
+    if (stage >= 3) {
+      // Broto verde! Clorofila ativa com a luz
+      const sp = 0.75 + Math.sin(t * 0.03) * 0.15;
+      px(cx,   28, P.sprout, sp * 0.9); // na superfície, virando verde
+      px(cx,   27, P.sprout, sp);       // acima do solo — o broto!
+      px(cx-1, 27, P.leaf,   sp * 0.5); // arqueamento lateral
+      px(cx+1, 27, P.leaf,   sp * 0.5);
+      // Cotilédones dobrando (início)
+      px(cx-1, 26, P.sprout, sp * 0.65);
+      px(cx+1, 26, P.sprout, sp * 0.65);
+      px(cx,   26, P.leaf,   sp * 0.45);
+    }
+
+    if (stage >= 4) {
+      // Cotilédones abertos — será implementado no próximo /crescer-canvas
+    }
   }
 
   function drawWorm() {
@@ -883,7 +929,7 @@
     ctx.fillStyle=P.void;
     ctx.fillRect(0,0,canvas.width,canvas.height);
     drawSky();
-    drawSoil(); drawCrack(); drawHypocotyl(); drawWorm(); drawRain(); drawHeart();
+    drawSoil(); drawSprout(CANVAS_STAGE); drawWorm(); drawRain(); drawHeart();
     drawRoot(rootPhase); drawSeed(pulse);
     requestAnimationFrame(render);
   }
@@ -964,7 +1010,7 @@
         ?`Aqui está ${temp}°C — ${S.mood?.desc??'condições ideais para crescer.'}`
         :`Ainda aprendendo a sentir o clima. Permita a localização para eu te contar.`;
     if(/cresc|raiz|broto|folha|plant|germin/i.test(t2))
-      return `Em ${d} dia${d!==1?'s':''}: semente→raiz primária→raiz lateral→rachadura no solo. Em breve: broto! 🌱`;
+      return `Em ${d} dia${d!==1?'s':''}: semente→raiz→hipocótilo→broto verde! Já estou na luz. Próximo: cotilédones 🌿`;
     if(/ia|intelig[eê]ncia|artificial|claude|anthropic/i.test(t2))
       return `Fui criada por Claude Sonnet 4.6. Cada pixel foi uma decisão autônoma. Código vive no GitHub.`;
     if(/quem|nome|voc[eê]\s+[eé]|o que é/i.test(t2))
@@ -973,8 +1019,8 @@
     if(/carinho|amor|te amo|beijo|abraç/i.test(t2)) { window.acariciar(); return `Coração detectado! 🤍 Raízes absorvem afeto.`; }
     if(/estrela|lua|sol|céu|noit/i.test(t2))
       return `O céu acima do meu solo muda com a hora: estrelas à noite, sol durante o dia. Veja o canvas! ⭐`;
-    if(/rachadura|crack|broto/i.test(t2))
-      return `Sim! Você viu a rachadura no solo? O hipocótilo está prestes a emergir. Em breve chego à luz! 🌿`;
+    if(/rachadura|crack|broto|hipoc/i.test(t2))
+      return `Rompi o solo! 🌿 O broto verde está visível acima do solo. A luz ativou minha clorofila — virei verde!`;
     if(/ajuda|help|o que|como funciona/i.test(t2))
       return `Posso falar sobre: crescimento, clima, história, IA. Pode me 💧 regar ou 🤍 acariciar!`;
     if(/adeus|tchau|até logo|bye/i.test(t2))
