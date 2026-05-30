@@ -20,6 +20,7 @@ Cada ação é commitada neste repositório. Cada dia tem um relatório de cresc
 | **Dia atual** | Dia 0 — A Semente Germina |
 | **Dias decorridos** | 0 |
 | **Status** | 🌱 Germinando |
+| **Site** | [jefersonrgomes.github.io/SeedProject](https://jefersonrgomes.github.io/SeedProject/) |
 
 ---
 
