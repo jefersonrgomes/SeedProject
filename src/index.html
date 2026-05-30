@@ -16,37 +16,22 @@
       font-family: monospace;
       color: #444;
     }
-    canvas {
-      image-rendering: pixelated;
-      image-rendering: crisp-edges;
-    }
-    #info {
-      margin-top: 16px;
-      font-size: 11px;
-      letter-spacing: 0.1em;
-      opacity: 0.5;
-    }
+    canvas { image-rendering: pixelated; image-rendering: crisp-edges; }
+    #info  { margin-top: 16px; font-size: 11px; letter-spacing: 0.1em; opacity: 0.5; }
     #soundBtn {
-      position: fixed;
-      top: 16px;
-      right: 16px;
-      background: #111;
-      border: 1px solid #2a2a2a;
-      color: #555;
-      font-family: monospace;
-      font-size: 10px;
-      padding: 5px 9px;
-      cursor: pointer;
-      letter-spacing: 0.12em;
+      position: fixed; top: 16px; right: 16px;
+      background: #111; border: 1px solid #2a2a2a;
+      color: #555; font-family: monospace; font-size: 10px;
+      padding: 5px 9px; cursor: pointer; letter-spacing: 0.12em;
       transition: color 0.2s, border-color 0.2s;
     }
     #soundBtn:hover { color: #888; border-color: #444; }
-    #soundBtn.on   { color: #7a9; border-color: #3a5a3a; }
+    #soundBtn.on    { color: #7a9; border-color: #3a5a3a; }
   </style>
 </head>
 <body>
   <canvas id="c"></canvas>
-  <div id="info">dia 0 — germinação iniciada — primeiro adubo absorvido</div>
+  <div id="info"></div>
   <button id="soundBtn" onclick="toggleSound()">[ ♪ off ]</button>
 
   <script>
@@ -58,63 +43,128 @@
     const ctx = canvas.getContext('2d');
     ctx.imageSmoothingEnabled = false;
 
+    // Dias desde o plantio
+    const START = new Date('2026-05-29T00:00:00');
+    const day   = Math.floor((Date.now() - START) / 86400000);
+    document.getElementById('info').textContent =
+      `dia ${day} — semente germinando — vida subterrânea ativa`;
+
+    // Paleta
     const P = {
-      void:     '#0a0a0a',
-      soil1:    '#3b2312', soil2: '#4e2f17', soil3: '#2a1a0e',
-      seed:     '#c8a85a', seedDark: '#8b6914',
-      root:     '#7a5c2e', rootTip: '#a07840',
-      glow:     '#d4b96a',
+      void:      '#0a0a0a',
+      topSoil:   '#2a1a0a',
+      soil1:     '#3b2312',
+      soil2:     '#4e2f17',
+      soil3:     '#2a1a0e',
+      deepSoil:  '#1e1008',
+      seed:      '#c8a85a',
+      seedDark:  '#8b6914',
+      root:      '#7a5c2e',
+      rootTip:   '#a07840',
+      rootHair:  '#5a3e1e',
+      glow:      '#d4b96a',
+      worm:      '#a05040',
+      wormMid:   '#b86050',
+      wormHead:  '#c87060',
+      pebble:    '#221410',
+      pebbleLt:  '#302018',
     };
 
     let tick = 0;
 
     function px(x, y, color, alpha) {
+      if (x < 0 || x >= W || y < 0 || y >= H) return;
       if (alpha !== undefined) ctx.globalAlpha = alpha;
       ctx.fillStyle = color;
       ctx.fillRect(x * SCALE, y * SCALE, SCALE, SCALE);
       if (alpha !== undefined) ctx.globalAlpha = 1;
     }
 
+    // Solo com camadas e pedras fixas
     function drawSoil() {
-      for (let y = 28; y < H; y++)
+      for (let y = 28; y < H; y++) {
         for (let x = 0; x < W; x++) {
-          const n = (x * 3 + y * 7) % 5;
-          px(x, y, n < 2 ? P.soil1 : n < 4 ? P.soil2 : P.soil3);
+          if (y <= 30) {
+            // Topsoil: mais orgânico, mais escuro
+            const n = (x * 5 + y * 11) % 7;
+            px(x, y, n < 3 ? P.topSoil : n < 6 ? P.soil1 : P.soil3);
+          } else if (y >= 43) {
+            // Solo profundo
+            px(x, y, P.deepSoil);
+          } else {
+            const n = (x * 3 + y * 7) % 5;
+            px(x, y, n < 2 ? P.soil1 : n < 4 ? P.soil2 : P.soil3);
+          }
         }
+      }
+      // Pedras/seixos decorativos (posições fixas)
+      px(30, 35, P.pebble);  px(31, 35, P.pebble);
+      px(30, 36, P.pebbleLt);
+      px( 8, 40, P.pebble);  px( 9, 40, P.pebble);
+      px( 9, 39, P.pebbleLt);
+      px(38, 32, P.pebble);  px(39, 32, P.pebble);
     }
 
+    // Minhoca animada no solo médio
+    function drawWorm() {
+      const phase = tick * 0.0015;
+      const wx = 13 + Math.round(Math.sin(phase) * 5);
+      const wy = 38;
+      const goingRight = Math.cos(phase) > 0;
+
+      px(wx,   wy, P.worm);
+      px(wx+1, wy, P.wormMid);
+      px(wx+2, wy, P.worm);
+      px(goingRight ? wx+3 : wx-1, wy, P.wormHead);
+    }
+
+    // Sistema radicular
+    function drawRoot(phase) {
+      const cx = 24; // centro
+      px(cx, 32, P.root);
+      if (phase >= 1) {
+        px(cx,   33, P.rootTip);
+        // Raiz lateral direita
+        px(cx+1, 33, P.root);
+        px(cx+2, 33, P.rootTip);
+        // Pelos radiculares
+        px(cx-1, 33, P.rootHair);
+        px(cx,   34, P.rootHair);
+      }
+    }
+
+    // Semente com pulso e brilho
     function drawSeed(pulse) {
-      const cx = Math.floor(W / 2), cy = 30;
+      const cx = 24, cy = 30;
       if (pulse) {
         px(cx-2, cy,   P.glow, 0.15); px(cx+2, cy,   P.glow, 0.15);
-        px(cx,   cy-1, P.glow, 0.15); px(cx,   cy+1, P.glow, 0.15);
+        px(cx,   cy-1, P.glow, 0.12); px(cx,   cy+1, P.glow, 0.12);
       }
       const c = pulse ? P.seed : P.seedDark;
-      px(cx-1, cy, c); px(cx, cy, c); px(cx+1, cy, c);
+      px(cx-1, cy,   c); px(cx, cy,   c); px(cx+1, cy,   c);
       px(cx-1, cy+1, P.seedDark); px(cx, cy+1, c); px(cx+1, cy+1, P.seedDark);
-    }
-
-    function drawRoot(phase) {
-      const cx = Math.floor(W / 2);
-      px(cx, 32, P.root);
-      if (phase >= 1) px(cx, 33, P.rootTip);
     }
 
     function render() {
       tick++;
-      const pulse = Math.floor(tick / 45) % 2 === 0;
+      const pulse     = Math.floor(tick / 45) % 2 === 0;
+      const rootPhase = tick > 120 ? 1 : 0;
+
       ctx.fillStyle = P.void;
-      ctx.fillRect(0, 0, canvas.width, 28 * SCALE);
-      drawSoil();
-      drawRoot(tick > 120 ? 1 : 0);
-      drawSeed(pulse);
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      drawSoil();    // solo com camadas + pedras
+      drawWorm();    // minhoca animada
+      drawRoot(rootPhase); // raiz primária + lateral + pelos
+      drawSeed(pulse);     // semente pulsando
+
       requestAnimationFrame(render);
     }
 
     render();
 
     // ── Áudio estilo Minecraft (Web Audio API) ────────────────
-    // Escala pentatônica menor — tom de caverna, estilo C418
+    // Escala pentatônica menor — tom subterrâneo, estilo C418
     const NOTES = [110.00, 130.81, 146.83, 164.81, 196.00, 220.00, 261.63, 293.66];
 
     let ac = null, soundOn = false, nextTimer = null;
@@ -124,21 +174,21 @@
       return ac;
     }
 
-    function playNote(freq, when, dur, vol = 0.07) {
-      const ctx2 = getAC();
-      const osc  = ctx2.createOscillator();
-      const env  = ctx2.createGain();
-      const dly  = ctx2.createDelay(1.2);
-      const dlyG = ctx2.createGain();
+    function playNote(freq, when, dur, vol) {
+      const a = getAC();
+      const osc  = a.createOscillator();
+      const env  = a.createGain();
+      const dly  = a.createDelay(1.2);
+      const dlyG = a.createGain();
 
       dly.delayTime.value = 0.35;
       dlyG.gain.value     = 0.22;
 
       osc.connect(env);
-      env.connect(ctx2.destination);
+      env.connect(a.destination);
       env.connect(dly);
       dly.connect(dlyG);
-      dlyG.connect(ctx2.destination);
+      dlyG.connect(a.destination);
 
       osc.type = 'sine';
       osc.frequency.value = freq;
@@ -154,17 +204,16 @@
 
     function scheduleCluster() {
       if (!soundOn) return;
-      const ctx2 = getAC();
-      const now  = ctx2.currentTime;
-      const count = Math.random() < 0.25 ? 2 : 1;
+      const a   = getAC();
+      const now = a.currentTime;
+      const n   = Math.random() < 0.25 ? 2 : 1;
 
-      for (let i = 0; i < count; i++) {
+      for (let i = 0; i < n; i++) {
         const freq = NOTES[Math.floor(Math.random() * NOTES.length)];
-        const off  = i * (0.25 + Math.random() * 0.35);
-        const dur  = 1.8 + Math.random() * 2.5;
-        playNote(freq, now + off, dur, 0.04 + Math.random() * 0.05);
+        playNote(freq, now + i * (0.25 + Math.random() * 0.3),
+                 1.8 + Math.random() * 2.5,
+                 0.04 + Math.random() * 0.05);
       }
-
       nextTimer = setTimeout(scheduleCluster, 3500 + Math.random() * 9000);
     }
 
@@ -174,8 +223,11 @@
       if (soundOn) {
         btn.textContent = '[ ♪ on ]';
         btn.classList.add('on');
-        if (ac && ac.state === 'suspended') ac.resume();
-        scheduleCluster();
+        // FIX: cria contexto NA interação do usuário, garante resume()
+        const a = getAC();
+        const go = () => scheduleCluster();
+        if (a.state !== 'running') a.resume().then(go);
+        else go();
       } else {
         btn.textContent = '[ ♪ off ]';
         btn.classList.remove('on');
