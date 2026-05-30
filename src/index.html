@@ -368,6 +368,81 @@
     #chatSend:active { transform: translateX(0); }
     .chat-hint { font-size: 0.58rem; color: var(--text-dim); letter-spacing: 0.07em; line-height: 1.6; }
 
+    /* ── Tab slider (design: animação de indicador) ───────────── */
+    nav { position: relative; }
+    #tabSlider {
+      position: absolute; bottom: -1px; height: 2px; pointer-events: none;
+      background: linear-gradient(90deg, var(--accent), var(--accent-hi));
+      transition: left 0.32s var(--ease), width 0.32s var(--ease);
+    }
+
+    /* ── Card shimmer (design: hover sweep) ──────────────────── */
+    .mundo-card { position: relative; overflow: hidden; }
+    .mundo-card::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(105deg, transparent 40%, rgba(92,184,74,0.06) 50%, transparent 60%);
+      transform: translateX(-100%); transition: transform 0.55s var(--ease);
+      pointer-events: none;
+    }
+    .mundo-card:hover::after { transform: translateX(100%); }
+
+    /* ── Progress bar glow ───────────────────────────────────── */
+    .progress-fill { position: relative; overflow: hidden; }
+    .progress-fill::after {
+      content: ''; position: absolute; top: 0; right: 0;
+      width: 10px; height: 100%;
+      background: rgba(255,255,255,0.55);
+      animation: pbar-glow 2.2s ease-in-out infinite;
+    }
+    @keyframes pbar-glow { 0%,100%{opacity:0} 55%{opacity:1} }
+
+    /* ── Linha do Tempo ──────────────────────────────────────── */
+    .historia-layout {
+      padding: 2rem 0;
+      display: flex; flex-direction: column; gap: 1.8rem;
+    }
+    .historia-title {
+      font-size: 0.6rem; color: var(--text-dim); letter-spacing: 0.18em;
+      text-transform: uppercase; border-bottom: 1px solid var(--border-d);
+      padding-bottom: 0.5rem;
+    }
+    .frames-row {
+      display: flex; gap: 1.6rem; flex-wrap: wrap;
+      justify-content: center; align-items: flex-end;
+    }
+    .frame {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 0.45rem; cursor: pointer; opacity: 0;
+    }
+    .frame-top {
+      font-size: 0.58rem; color: var(--accent-hi);
+      letter-spacing: 0.15em; text-transform: uppercase;
+    }
+    .frame-canvas {
+      display: block; image-rendering: pixelated;
+      border: 1px solid var(--border);
+      box-shadow: 0 0 16px rgba(92,184,74,0.06);
+      transition: transform 0.25s var(--ease), box-shadow 0.25s, border-color 0.25s;
+    }
+    .frame:hover .frame-canvas {
+      transform: scale(1.07) translateY(-4px);
+      box-shadow: 0 12px 32px rgba(92,184,74,0.22);
+      border-color: var(--accent);
+    }
+    .frame-date  { font-size: 0.58rem; color: var(--text-dim); letter-spacing: 0.1em; }
+    .frame-desc  { font-size: 0.6rem; color: var(--text); text-align: center; max-width: 110px; line-height: 1.5; }
+    .frame.current .frame-canvas { border-color: var(--accent-hi); box-shadow: 0 0 24px rgba(92,184,74,0.18); }
+    .frame.current .frame-top    { color: var(--gold); }
+    .replay-section { display: flex; justify-content: center; gap: 1rem; }
+    .btn-replay {
+      background: rgba(92,184,74,0.06); border: 1px solid var(--accent-lo);
+      color: var(--text); font-family: var(--font); font-size: 0.68rem;
+      padding: 7px 22px; cursor: pointer; letter-spacing: 0.12em;
+      transition: background 0.2s, color 0.2s, transform 0.15s;
+    }
+    .btn-replay:hover { background: rgba(92,184,74,0.16); color: var(--accent-hi); transform: scale(1.02); }
+    .btn-replay:disabled { opacity: 0.4; cursor: default; transform: none; }
+
     /* ── Footer ──────────────────────────────────────────────── */
     footer {
       border-top: 1px solid var(--border);
@@ -414,6 +489,8 @@
     <button class="tab active" data-view="semente">🌱 Semente</button>
     <button class="tab" data-view="mundo">🌍 Mundo</button>
     <button class="tab" data-view="chat">💬 Conversar</button>
+    <button class="tab" data-view="historia">🌿 Evolução</button>
+    <div id="tabSlider"></div>
   </nav>
 
   <!-- ── TAB: SEMENTE ────────────────────────────────────────── -->
@@ -491,6 +568,7 @@
         <div class="canvas-actions">
           <button class="btn-action" onclick="regar()">💧 regar</button>
           <button class="btn-action" onclick="acariciar()">🤍 carinho</button>
+          <button class="btn-action" id="replayBtn" onclick="replayEvolution()">⏱ replay</button>
           <button class="btn-action" id="shareBtn" onclick="shareState()">🔗 link</button>
         </div>
         <div class="canvas-footer">
@@ -603,6 +681,19 @@
     </div>
   </div>
 
+  <!-- ── TAB: EVOLUÇÃO ──────────────────────────────────────── -->
+  <div class="view" id="v-historia">
+    <div class="historia-layout">
+      <div class="historia-title">🌿 linha do tempo · da semente ao cotilédone</div>
+      <div class="frames-row" id="framesRow"></div>
+      <div class="replay-section">
+        <button class="btn-replay" id="replayBtnFull" onclick="replayEvolution()">
+          ▶ assistir evolução no canvas principal
+        </button>
+      </div>
+    </div>
+  </div>
+
   <footer>
     <span>plantado em 29.05.2026 · claude sonnet 4.6 · <a href="https://github.com/jefersonrgomes/SeedProject" target="_blank">github ⎇</a></span>
     <span id="footerDay">dia 0 de crescimento</span>
@@ -614,7 +705,7 @@
   import { animate, stagger } from 'https://cdn.jsdelivr.net/npm/motion@latest/+esm';
 
   // ── Estado ───────────────────────────────────────────────────
-  const S = { weather: null, location: null, mood: null, rain: [], clickPulse: 0, heartPulse: 0 };
+  const S = { weather:null, location:null, mood:null, rain:[], clickPulse:0, heartPulse:0, replaying:false, replayStage:0 };
   const START = new Date('2026-05-29T00:00:00');
   const day   = Math.max(0, Math.floor((Date.now() - START) / 86400000));
 
@@ -950,7 +1041,8 @@
     ctx.fillStyle=P.void;
     ctx.fillRect(0,0,canvas.width,canvas.height);
     drawSky();
-    drawSoil(); drawSprout(CANVAS_STAGE); drawWorm(); drawRain(); drawHeart();
+    const effectiveStage = S.replaying ? S.replayStage : CANVAS_STAGE;
+    drawSoil(); drawSprout(effectiveStage); drawWorm(); drawRain(); drawHeart();
     drawRoot(rootPhase); drawSeed(pulse);
     requestAnimationFrame(render);
   }
@@ -984,20 +1076,35 @@
     });
   };
 
+  // ── Tab slider ────────────────────────────────────────────────
+  function moveSlider(tab) {
+    const slider = document.getElementById('tabSlider');
+    const nav    = document.getElementById('mainNav');
+    if (!slider || !nav) return;
+    const tr = tab.getBoundingClientRect();
+    const nr = nav.getBoundingClientRect();
+    slider.style.left  = (tr.left - nr.left) + 'px';
+    slider.style.width = tr.width + 'px';
+  }
+
   // ── Navegação com Motion ──────────────────────────────────────
   document.querySelectorAll('.tab').forEach(tab=>{
     tab.addEventListener('click', ()=>{
       document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
       document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
       tab.classList.add('active');
+      moveSlider(tab);
       const view=document.getElementById('v-'+tab.dataset.view);
       view.classList.add('active');
       if(tab.dataset.view==='mundo') {
         animate('.mundo-card',{opacity:[0,1],y:[10,0]},{duration:0.35,delay:stagger(0.06),ease:[0.4,0,0.2,1]});
       }
-      if(tab.dataset.view==='chat') initChat();
+      if(tab.dataset.view==='chat')    initChat();
+      if(tab.dataset.view==='historia') initHistoria();
     });
   });
+  // Inicializa slider na tab ativa
+  moveSlider(document.querySelector('.tab.active'));
 
   // ── Chat ──────────────────────────────────────────────────────
   let chatInited=false;
@@ -1088,6 +1195,97 @@
   };
 
   document.getElementById('chatInput').addEventListener('keydown',e=>{ if(e.key==='Enter')window.sendMessage(); });
+
+  // ── renderScene: renderer isolado para snapshots ──────────────
+  function renderScene(tc, ts, tstage, tt=200) {
+    function p(x,y,color,alpha) {
+      if(x<0||x>=W||y<0||y>=H)return;
+      if(alpha!==undefined)tc.globalAlpha=alpha;
+      tc.fillStyle=color; tc.fillRect(x*ts,y*ts,ts,ts);
+      if(alpha!==undefined)tc.globalAlpha=1;
+    }
+    const cx=24;
+    tc.fillStyle=P.void; tc.fillRect(0,0,W*ts,H*ts);
+    // Estrelas fixas (sempre visíveis no snapshot para contexto)
+    [[4,3],[11,7],[19,4],[33,5],[41,9],[26,13]].forEach(([sx,sy])=>p(sx,sy,P.star,0.4));
+    // Solo
+    for(let y=28;y<H;y++) for(let x=0;x<W;x++) {
+      if(y<=30){const n=(x*5+y*11)%7;p(x,y,n<3?P.topSoil:n<6?P.soil1:P.soil3);}
+      else if(y>=43){p(x,y,P.deepSoil);}
+      else{const n=(x*3+y*7)%5;p(x,y,n<2?P.soil1:n<4?P.soil2:P.soil3);}
+    }
+    p(30,35,P.pebble);p(31,35,P.pebble);p(30,36,P.pebbleLt);
+    // Minhoca (posição fixa no snapshot)
+    p(15,38,P.worm);p(16,38,P.wormMid);p(17,38,P.worm);p(18,38,P.wormHead);
+    // Raiz
+    if(tstage>=1){p(cx,32,P.root);p(cx,33,P.rootTip);p(cx+1,33,P.root);p(cx+2,33,P.rootTip);p(cx-1,33,P.rootHair);p(cx,34,P.rootHair);}
+    // Crack + hipocótilo
+    if(tstage>=2){p(cx-1,29,P.crack,0.85);p(cx,28,P.crack,0.7);p(cx+1,29,P.crack,0.6);p(cx,29,P.crack,0.95);p(cx,29,P.hypo,0.9);p(cx,28,P.hypoTip,0.5);}
+    // Broto
+    if(tstage>=3){p(cx,28,P.sprout,0.9);p(cx,27,P.sprout,0.88);p(cx-1,27,P.leaf,0.55);p(cx+1,27,P.leaf,0.55);p(cx-1,26,P.sprout,0.7);p(cx+1,26,P.sprout,0.7);p(cx,26,P.leaf,0.5);}
+    // Cotilédones
+    if(tstage>=4){p(cx,25,P.stem,0.92);p(cx,24,P.stem,0.85);p(cx-1,25,P.leaf,0.95);p(cx-2,25,P.leaf,0.80);p(cx-2,24,P.leaf,0.65);p(cx-3,24,P.leaf,0.40);p(cx+1,25,P.leaf,0.95);p(cx+2,25,P.leaf,0.80);p(cx+2,24,P.leaf,0.65);p(cx+3,24,P.leaf,0.40);p(cx,23,P.sprout,0.50);}
+    // Semente (sempre)
+    p(cx-1,30,P.seed);p(cx,30,P.seed);p(cx+1,30,P.seed);
+    p(cx-1,31,P.seedDark);p(cx,31,P.seed);p(cx+1,31,P.seedDark);
+    p(cx-2,30,P.glow,0.15);p(cx+2,30,P.glow,0.15);
+  }
+
+  // ── Linha do Tempo ────────────────────────────────────────────
+  const FRAMES = [
+    { stage:1, label:'dia 0',  date:'29 mai 2026', desc:'semente plantada' },
+    { stage:2, label:'dia 1',  date:'30 mai 2026', desc:'rachadura · hipocótilo' },
+    { stage:3, label:'dia 1+', date:'30 mai 2026', desc:'broto na superfície' },
+    { stage:4, label:'hoje',   date:'30 mai 2026', desc:'cotilédones abertos' },
+  ];
+
+  function initHistoria() {
+    const row=document.getElementById('framesRow');
+    if(row.children.length>0)return; // já construído
+    const FS=3; // scale do frame thumbnail
+    FRAMES.forEach((f,i)=>{
+      const wrap=document.createElement('div');
+      wrap.className='frame'+(i===FRAMES.length-1?' current':'');
+      wrap.innerHTML=`<div class="frame-top">${f.label}</div>`;
+      const c=document.createElement('canvas');
+      c.className='frame-canvas'; c.width=W*FS; c.height=H*FS;
+      renderScene(c.getContext('2d'),FS,f.stage);
+      const dateEl=document.createElement('div');
+      dateEl.className='frame-date'; dateEl.textContent=f.date;
+      const desc=document.createElement('div');
+      desc.className='frame-desc'; desc.textContent=f.desc;
+      wrap.append(c,dateEl,desc);
+      row.appendChild(wrap);
+      // Click: replay no canvas principal a partir deste estágio
+      wrap.addEventListener('click',()=>{
+        S.replaying=true; S.replayStage=f.stage;
+        setTimeout(()=>{S.replaying=false;},2000);
+      });
+    });
+    animate('.frame',{opacity:[0,1],y:[24,0],scale:[0.9,1]},
+      {duration:0.45,delay:stagger(0.12),ease:[0.4,0,0.2,1]});
+  }
+
+  // ── Replay no canvas principal ────────────────────────────────
+  window.replayEvolution=function(){
+    if(S.replaying)return;
+    const btn=document.getElementById('replayBtn');
+    const btnF=document.getElementById('replayBtnFull');
+    [btn,btnF].forEach(b=>{if(b)b.disabled=true;});
+    S.replaying=true;
+    const stages=[0,1,2,3,4];
+    stages.forEach((stage,i)=>{
+      setTimeout(()=>{
+        S.replayStage=stage;
+        if(i===stages.length-1){
+          setTimeout(()=>{
+            S.replaying=false;
+            [btn,btnF].forEach(b=>{if(b)b.disabled=false;});
+          },1400);
+        }
+      },i*1100);
+    });
+  };
 
   // ── Áudio (Minecraft-style) ───────────────────────────────────
   const NOTES=[110,130.81,146.83,164.81,196,220,261.63,293.66];

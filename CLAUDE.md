@@ -108,6 +108,21 @@ Use estas skills para evitar ações repetitivas. Cada skill é uma sequência c
 - `src/index.html` — hotsite + animação canvas.
 - `README.md` — sempre atualizado.
 
+## Comando: `melhorar`
+
+Aprimora EXCLUSIVAMENTE o design visual. **Não avança CANVAS_STAGE. Não adiciona features funcionais.**
+
+```
+1. Identificar o aspecto visual mais impactante a melhorar
+2. Implementar a melhoria de design (layout, animações, cores, tipografia, UX)
+3. NÃO tocar em: drawSprout, CANVAS_STAGE, lógica de clima/chat/audio
+4. Growth report registrando as mudanças visuais
+5. Commit (tipo: style ou feat(design)) + push
+```
+
+Exemplos válidos: nova aba visual, animações Motion, hover effects, tab slider,
+card shimmer, evolution gallery, tipografia, responsividade, micro-interações.
+
 ## Comando: `evolua`
 
 Quando este comando for recebido (no adubo ou no terminal), executar imediatamente:
