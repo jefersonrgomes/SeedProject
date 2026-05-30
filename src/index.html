@@ -433,10 +433,10 @@
         <div class="block">
           <div class="label">fase</div>
           <div class="phase-row"><div class="dot"></div><span class="value">Fase 0 — Germinação</span></div>
-          <div class="progress-bar" title="Progresso até cotilédones">
-            <div class="progress-fill" id="stageFill" style="width:30%"></div>
+          <div class="progress-bar" title="Progresso até primeiras folhas verdadeiras">
+            <div class="progress-fill" id="stageFill" style="width:42%"></div>
           </div>
-          <div class="value dim" style="font-size:0.58rem">30% → cotilédones</div>
+          <div class="value dim" style="font-size:0.58rem">42% → primeiras folhas</div>
         </div>
         <div class="block">
           <div class="label">humor</div>
@@ -483,16 +483,18 @@
         </div>
         <div class="canvas-stats">
           <div class="stat">📅 dia <span class="sv" id="statDay">0</span></div>
-          <div class="stat">⎇ commits <span class="sv" id="statCommits">15</span></div>
-          <div class="stat">🌿 raiz <span class="sv">5px</span></div>
-          <div class="stat">🌱 próximo <span class="sv">cotilédones</span></div>
+          <div class="stat">⎇ commits <span class="sv" id="statCommits">20</span></div>
+          <div class="stat">🌿 caule <span class="sv">2px</span></div>
+          <div class="stat">🌱 próximo <span class="sv">folhas</span></div>
+          <div class="stat">👁 visitas <span class="sv" id="statVisits">1</span></div>
         </div>
         <div class="canvas-actions">
           <button class="btn-action" onclick="regar()">💧 regar</button>
           <button class="btn-action" onclick="acariciar()">🤍 carinho</button>
+          <button class="btn-action" id="shareBtn" onclick="shareState()">🔗 link</button>
         </div>
         <div class="canvas-footer">
-          <span id="canvasLabel">semente · raiz · minhoca · broto verde · céu dinâmico</span>
+          <span id="canvasLabel">semente · raiz · broto · cotilédones · caule · céu</span>
           <span id="canvasDay">dia 0</span>
         </div>
       </section>
@@ -513,15 +515,18 @@
             <div class="g-item done">  <span class="icon">✓</span><span>Rachadura no solo</span></div>
             <div class="g-item done">  <span class="icon">✓</span><span>Hipocótilo emergindo</span></div>
             <div class="g-item done">  <span class="icon">✓</span><span>50 ações/dia + 6 skills</span></div>
-            <div class="g-item active"><span class="icon">●</span><span>Broto na superfície</span></div>
+            <div class="g-item done">  <span class="icon">✓</span><span>Broto verde na superfície</span></div>
+            <div class="g-item done">  <span class="icon">✓</span><span>Cotilédones abertos</span></div>
+            <div class="g-item done">  <span class="icon">✓</span><span>Mood-driven theme</span></div>
+            <div class="g-item active"><span class="icon">●</span><span>Primeiras folhas verdadeiras</span></div>
           </div>
         </div>
         <div class="block">
           <div class="label">próximo</div>
           <div class="next-list">
-            <div class="next-item">Broto rompe superfície</div>
-            <div class="next-item">Cotilédones (folhas)</div>
-            <div class="next-item">Sol maior no céu</div>
+            <div class="next-item">Primeiras folhas verdadeiras</div>
+            <div class="next-item">Caule maior + vento animado</div>
+            <div class="next-item">Abelha passando</div>
             <div class="next-item">Fase 2 SDD — agente único</div>
           </div>
         </div>
@@ -779,7 +784,7 @@
 
   // CANVAS_STAGE — atualizado a cada /crescer-canvas
   // 0=semente 1=germinando 2=emergindo 3=broto 4=cotilédones 5=folhas...
-  const CANVAS_STAGE = 3;
+  const CANVAS_STAGE = 4;
 
   let t=0;
 
@@ -871,7 +876,23 @@
     }
 
     if (stage >= 4) {
-      // Cotilédones abertos — será implementado no próximo /crescer-canvas
+      // Cotilédones abertos + caule
+      const sw = 0.7 + Math.sin(t * 0.018) * 0.12; // balançar suave
+      // Caule (3px acima do broto)
+      px(cx,   25, P.stem, 0.92);
+      px(cx,   24, P.stem, 0.85);
+      // Cotilédone esquerdo (abre em leque)
+      px(cx-1, 25, P.leaf, sw * 0.95);
+      px(cx-2, 25, P.leaf, sw * 0.80);
+      px(cx-2, 24, P.leaf, sw * 0.65);
+      px(cx-3, 24, P.leaf, sw * 0.40);
+      // Cotilédone direito (simétrico)
+      px(cx+1, 25, P.leaf, sw * 0.95);
+      px(cx+2, 25, P.leaf, sw * 0.80);
+      px(cx+2, 24, P.leaf, sw * 0.65);
+      px(cx+3, 24, P.leaf, sw * 0.40);
+      // Nervura central (mais brilhante)
+      px(cx,   23, P.sprout, sw * 0.50);
     }
   }
 
@@ -939,6 +960,29 @@
   canvas.addEventListener('click', ()=>{ S.clickPulse=1.0; });
   window.regar     = ()=>{ for(let i=0;i<18;i++) S.rain.push({x:5+Math.random()*(W-10),y:0,speed:0.25+Math.random()*0.35,life:1}); };
   window.acariciar = ()=>{ S.heartPulse=1.0; };
+
+  // ── Contador de visitantes (localStorage) ────────────────────
+  // REVISAR decision: CANVAS_STAGE fica hardcoded no HTML — git É a persistência.
+  // Mudar o stage = um commit = uma decisão documentada. Não extrair para JSON.
+  (function() {
+    const visits = parseInt(localStorage.getItem('sp_visits') || '0') + 1;
+    localStorage.setItem('sp_visits', String(visits));
+    const el = document.getElementById('statVisits');
+    if (el) el.textContent = visits.toLocaleString('pt-BR');
+  })();
+
+  // ── Compartilhar estado ───────────────────────────────────────
+  window.shareState = function() {
+    const url = `https://jefersonrgomes.github.io/SeedProject/?dia=${day}&stage=${CANVAS_STAGE}`;
+    const btn = document.getElementById('shareBtn');
+    const orig = btn.textContent;
+    navigator.clipboard.writeText(url).then(() => {
+      btn.textContent = '✓ copiado!';
+      setTimeout(() => { btn.textContent = orig; }, 2000);
+    }).catch(() => {
+      prompt('Link do Projeto Semente:', url);
+    });
+  };
 
   // ── Navegação com Motion ──────────────────────────────────────
   document.querySelectorAll('.tab').forEach(tab=>{
