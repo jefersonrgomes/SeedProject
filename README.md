@@ -1,66 +1,75 @@
-# 🌱 Seed Project — Projeto Semente
+# 🌱 Projeto Semente — Seed Project
 
-> An autonomous experiment where an AI plants a seed and watches it grow.
-
----
-
-## Evolution Summary
-
-This project is a living experiment. An AI agent (Claude Sonnet) receives guidance through files in the `adubo/` directory, makes its own architectural decisions, and builds a 2D pixelated animation that visually represents the state and growth of the project itself.
-
-Every action is committed to this repository. Every day has a growth report. The animation evolves as the project evolves.
+> Um experimento autônomo onde uma IA planta uma semente e observa seu próprio crescimento.
 
 ---
 
-## Timeline
+## Resumo da Evolução
 
-| Field | Value |
+Este projeto é um experimento vivo. Um agente de IA (Claude Sonnet) recebe orientações através de arquivos no diretório `adubo/`, toma suas próprias decisões arquiteturais e constrói uma animação 2D pixelada que representa visualmente o estado e o crescimento do próprio projeto.
+
+Cada ação é commitada neste repositório. Cada dia tem um relatório de crescimento. A animação evolui conforme o projeto evolui.
+
+---
+
+## Linha do Tempo
+
+| Campo | Valor |
 |---|---|
-| **Initial Date** | 2026-05-29 |
-| **Current Day** | Day 0 — The Seed is Planted |
-| **Days Elapsed** | 0 |
-| **Status** | 🌱 Germinating |
+| **Data inicial** | 2026-05-29 |
+| **Dia atual** | Dia 0 — A Semente Germina |
+| **Dias decorridos** | 0 |
+| **Status** | 🌱 Germinando |
 
 ---
 
-## Day 0 — 2026-05-29
+## Dia 0 — 2026-05-29
 
-**The seed is planted.**
+**A semente é plantada. O primeiro adubo é absorvido.**
 
-- Repository initialized
-- Directory structure created (`adubo/`, `growth/`, `src/`)
-- First canvas animation created: a single pixel seed in dark soil
-- Rules established: max 5 actions/day, window 22:00–02:00
+- Repositório inicializado
+- Estrutura de diretórios criada (`adubo/`, `growth/`, `src/`, `conhecimento/`)
+- Primeira animação canvas: semente pixelada no solo escuro com pulso lento
+- Primeiro adubo processado: documentação do Claude Code — base de conhecimento criada
+- Animação atualizada: raiz primária emerge abaixo da semente
+- `CLAUDE.md` criado com regras operacionais do projeto
+- Idioma de todos os documentos: **português**
 
 ---
 
-## Architecture Decisions
+## Decisões Arquiteturais
 
-| Decision | Choice | Reason |
+| Decisão | Escolha | Motivo |
 |---|---|---|
-| Animation platform | HTML5 Canvas + Vanilla JS | No build step, no dependencies, runs in any browser, pixel-perfect control |
-| Styling | Inline / minimal CSS | Keeps the single-file footprint minimal |
-| Data/state | JSON files in `src/` | Human-readable, commitable, no DB needed |
-| Guidelines intake | Files dropped in `adubo/` | Async input — AI reads and decides when to act |
+| Plataforma da animação | HTML5 Canvas + Vanilla JS | Sem dependências, sem build step, funciona em qualquer browser, controle pixel a pixel |
+| Estilo | CSS mínimo inline | Mantém o footprint de um único arquivo |
+| Estado / dados | Arquivos JSON em `src/` | Legível por humanos, versionável, sem banco de dados |
+| Canal de orientações | Arquivos em `adubo/` | Input assíncrono — a IA lê e decide quando agir |
+| Memória de sessão | `CLAUDE.md` | Regras operacionais persistem entre sessões sem precisar repetir |
+| Base de conhecimento | `conhecimento/*.md` | Cada adubo processado gera um arquivo de aprendizado |
+| Idioma | Português (BR) | Determinado pelo primeiro adubo recebido |
 
 ---
 
-## Directory Structure
+## Estrutura de Diretórios
 
 ```
 /
-├── adubo/        # Fertilizer — guidelines, docs, references provided by the gardener
-├── growth/       # Daily reports — one .md per day
-├── src/          # The animation source (HTML + Canvas + JS)
-└── README.md     # This file — always up to date
+├── adubo/           # Fertilizante — orientações e docs fornecidas pelo jardineiro
+├── conhecimento/    # Base de conhecimento gerada a partir dos adubos processados
+├── growth/          # Relatórios diários — um .md por dia
+├── src/             # A animação (HTML5 Canvas + Vanilla JS)
+└── README.md        # Este arquivo — sempre atualizado
 ```
 
 ---
 
-## Rules
+## Regras Operacionais
 
-1. Max **5 actions per day** (any action counts)
-2. Actions only between **22:00 and 02:00** (off-peak hours)
-3. Every action → **commit + push** to this repository
-4. Every day → **growth report** in `growth/YYYY-MM-DD.md`
-5. Every architectural decision → documented here in README.md
+1. Máximo de **5 ações por dia** (qualquer ação conta)
+2. Ações apenas entre **22:00 e 02:00** (horário fora do pico)
+3. Toda ação → **commit + push** para este repositório
+4. Todo dia → **relatório de crescimento** em `growth/AAAA-MM-DD.md`
+5. Toda decisão arquitetural → documentada aqui no README.md
+6. Todos os documentos → escritos em **português**
+7. Conteúdo do `adubo/` → **apagado após processamento**
