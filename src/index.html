@@ -8,39 +8,56 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap" rel="stylesheet">
   <style>
+    /* ── Design system — skills aplicados ─────────────────────
+       frontend-design (Anthropic): paleta comprometida, pesos extremos
+       web-design-guidelines (Vercel): hierarquia clara, elevation system
+       ui-ux-pro-max: glassmorphism, dark tech, 161 palettes
+       motion: stagger, scale, onUpdate, transições suaves
+    ─────────────────────────────────────────────────────────── */
     :root {
-      --bg:        #111a11;
-      --surface:   #192619;
-      --border:    #2e442e;
-      --border-d:  #1e2e1e;
-      --accent:    #5cb84a;
-      --accent-hi: #8acc5a;
-      --gold:      #e0c468;
-      --gold-dim:  #a88830;
-      --text:      #96b096;
-      --text-dim:  #5c7a5c;
-      --text-hi:   #c4dcc4;
-      --red:       '#9a4040';
-      --blue:      #5a8aaa;
-      --font:      'JetBrains Mono', monospace;
-      --ease:      cubic-bezier(0.4, 0, 0.2, 1);
-      --mood-color: #5cb84a;
+      /* Cores base */
+      --bg:         #0e160e;
+      --s1:         #172217;   /* surface 1 — painéis */
+      --s2:         #1e2e1e;   /* surface 2 — cards */
+      --s3:         #253525;   /* surface 3 — hover */
+      --border:     #304830;
+      --border-d:   #1e2e1e;
+      --accent:     #5cb84a;
+      --accent-hi:  #8acc5a;
+      --accent-lo:  #3a6e2e;
+      --gold:       #e0c468;
+      --gold-dim:   #a88830;
+      --text:       #9ab49a;
+      --text-dim:   #5c7a5c;
+      --text-hi:    #c8e0c8;
+      --blue:       #5a8aaa;
+      --glow-g:     rgba(92,184,74,0.15);
+      --glow-gold:  rgba(224,196,104,0.12);
+      --font:       'JetBrains Mono', monospace;
+      --ease:       cubic-bezier(0.4, 0, 0.2, 1);
+      --r:          0;          /* border-radius — mantemos sharp */
     }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
+
     body {
       font-family: var(--font);
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
+      overflow-x: hidden;
     }
+
+    /* Plano de fundo em camadas (frontend-design: "fundos com profundidade") */
     body::before {
       content: '';
       position: fixed; inset: 0; pointer-events: none; z-index: 0;
-      background-image: radial-gradient(circle, #2a3a2a 1px, transparent 1px);
-      background-size: 28px 28px;
-      opacity: 0.35;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(92,184,74,0.07) 0%, transparent 60%),
+        radial-gradient(circle, #2a3a2a 1px, transparent 1px) 0 0 / 28px 28px;
     }
+
     .app {
       position: relative; z-index: 1;
       min-height: 100vh;
@@ -51,7 +68,7 @@
       padding: 0 1.5rem;
     }
 
-    /* ── Header ───────────────────────────────────────────────── */
+    /* ── Header ──────────────────────────────────────────────── */
     header {
       display: flex; align-items: center; justify-content: space-between;
       padding: 1.2rem 0 0.8rem;
@@ -62,60 +79,81 @@
     .logo { display: flex; align-items: baseline; gap: 0.6rem; }
     .logo h1 {
       font-size: 0.85rem; font-weight: 700;
-      letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-hi);
+      letter-spacing: 0.22em; text-transform: uppercase;
+      /* gradient text — frontend-design: "bold aesthetic choices" */
+      background: linear-gradient(135deg, var(--text-hi) 0%, var(--accent-hi) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
     .logo .sub { font-size: 0.65rem; color: var(--text-dim); letter-spacing: 0.1em; }
     .header-right { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
     .clock-box {
       display: flex; flex-direction: column; align-items: flex-end;
-      font-size: 0.65rem; color: var(--text-dim); letter-spacing: 0.08em; line-height: 1.6;
+      font-size: 0.65rem; color: var(--text-dim); letter-spacing: 0.08em; line-height: 1.5;
     }
-    .clock-box .time { font-size: 1rem; font-weight: 700; color: var(--text-hi); letter-spacing: 0.05em; }
+    .clock-box .time {
+      font-size: 1.1rem; font-weight: 700; color: var(--text-hi); letter-spacing: 0.04em;
+    }
     .badge {
-      font-size: 0.6rem; letter-spacing: 0.15em; padding: 3px 8px;
+      font-size: 0.6rem; letter-spacing: 0.15em; padding: 3px 9px;
       border: 1px solid var(--border); color: var(--text-dim); text-transform: uppercase;
+      background: var(--s1);
+      transition: background 0.3s;
     }
-    .badge.live { border-color: var(--accent); color: var(--accent-hi); }
+    .badge.live {
+      border-color: var(--accent); color: var(--accent-hi); background: rgba(92,184,74,0.06);
+    }
     .badge.live::before { content: '● '; animation: blink 2s ease-in-out infinite; }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-    /* ── Nav Tabs ─────────────────────────────────────────────── */
+    /* ── Nav Tabs ────────────────────────────────────────────── */
     nav {
       display: flex; gap: 0; padding: 0.8rem 0 0;
       border-bottom: 1px solid var(--border);
+      position: relative;
       opacity: 0;
     }
     .tab {
       background: transparent; border: none; border-bottom: 2px solid transparent;
       color: var(--text-dim); font-family: var(--font); font-size: 0.7rem;
-      letter-spacing: 0.12em; padding: 0.5rem 1.2rem; cursor: pointer;
-      transition: color 0.2s, border-color 0.2s;
-      text-transform: uppercase;
+      letter-spacing: 0.12em; padding: 0.55rem 1.4rem; cursor: pointer;
+      transition: color 0.25s, border-color 0.25s, background 0.25s;
+      text-transform: uppercase; position: relative;
     }
-    .tab:hover { color: var(--text); }
+    .tab:hover  { color: var(--text); background: rgba(255,255,255,0.02); }
     .tab.active { color: var(--accent-hi); border-bottom-color: var(--accent); }
 
-    /* ── Views ────────────────────────────────────────────────── */
-    .view { display: none; }
+    /* ── Views ───────────────────────────────────────────────── */
+    .view { display: none; animation: viewIn 0.3s var(--ease) both; }
     .view.active { display: block; }
+    @keyframes viewIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
 
-    /* ── View: Semente ────────────────────────────────────────── */
+    /* ── Semente layout ──────────────────────────────────────── */
     .canvas-layout {
       display: grid;
-      grid-template-columns: 210px 1fr 230px;
+      grid-template-columns: 220px 1fr 240px;
       gap: 2rem; align-items: center;
       padding: 2rem 0;
     }
     .sidebar { display: flex; flex-direction: column; gap: 1.4rem; }
-    .block { display: flex; flex-direction: column; gap: 0.4rem; opacity: 0; }
+    .block   { display: flex; flex-direction: column; gap: 0.4rem; opacity: 0; }
     .label {
-      font-size: 0.58rem; font-weight: 700; letter-spacing: 0.25em; text-transform: uppercase;
-      color: var(--text-dim); padding-bottom: 0.35rem; border-bottom: 1px solid var(--border-d);
+      font-size: 0.58rem; font-weight: 700; letter-spacing: 0.25em;
+      text-transform: uppercase; color: var(--text-dim);
+      padding-bottom: 0.35rem; border-bottom: 1px solid var(--border-d);
     }
     .value     { font-size: 0.7rem; line-height: 1.6; color: var(--text); }
     .value.dim { color: var(--text-dim); font-size: 0.63rem; }
-    .day-num   { font-size: 2.6rem; font-weight: 700; line-height: 1; color: var(--gold); }
-    .phase-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.68rem; }
+
+    /* Day counter — gradient (ui-ux-pro-max: pesos extremos + cor dominante) */
+    .day-num {
+      font-size: 3rem; font-weight: 700; line-height: 1;
+      background: linear-gradient(135deg, var(--gold) 0%, var(--accent-hi) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .phase-row  { display: flex; align-items: center; gap: 0.5rem; font-size: 0.68rem; }
     .dot {
       width: 6px; height: 6px; border-radius: 50%;
       background: var(--accent-hi); flex-shrink: 0;
@@ -126,9 +164,9 @@
     .stack-item::before { content: '▸ '; color: var(--accent); }
     .growth-list { display: flex; flex-direction: column; gap: 0.35rem; }
     .g-item { font-size: 0.63rem; line-height: 1.5; display: flex; gap: 0.45rem; opacity: 0; }
-    .g-item .icon { flex-shrink: 0; color: var(--text-dim); }
-    .g-item.done .icon   { color: var(--accent-hi); }
-    .g-item.active .icon { color: var(--gold); animation: blink 1.8s ease-in-out infinite; }
+    .g-item .icon          { flex-shrink: 0; color: var(--text-dim); }
+    .g-item.done  .icon    { color: var(--accent-hi); }
+    .g-item.active .icon   { color: var(--gold); animation: blink 1.8s ease-in-out infinite; }
     .next-list { display: flex; flex-direction: column; gap: 0.28rem; }
     .next-item { font-size: 0.62rem; color: var(--text-dim); }
     .next-item::before { content: '○ '; color: var(--border); }
@@ -141,149 +179,222 @@
 
     /* Sound button */
     #soundBtn {
-      background: transparent; border: 1px solid var(--border);
+      width: 100%; background: transparent; border: 1px solid var(--border);
       color: var(--text-dim); font-family: var(--font); font-size: 0.66rem;
-      padding: 5px 9px; cursor: pointer; letter-spacing: 0.12em;
-      text-align: left; transition: color 0.2s, border-color 0.2s; width: 100%;
+      padding: 6px 10px; cursor: pointer; letter-spacing: 0.12em; text-align: left;
+      transition: color 0.2s, border-color 0.2s, background 0.2s;
     }
-    #soundBtn:hover { color: var(--text); border-color: var(--accent); }
-    #soundBtn.on    { color: var(--accent-hi); border-color: var(--accent); }
+    #soundBtn:hover { color: var(--text); border-color: var(--accent); background: var(--glow-g); }
+    #soundBtn.on    { color: var(--accent-hi); border-color: var(--accent); background: var(--glow-g); }
 
-    /* Canvas */
+    /* Mood strip — glassmorphism (ui-ux-pro-max) */
+    .mood-strip {
+      display: flex; align-items: center; gap: 0.6rem;
+      font-size: 0.65rem; padding: 0.5rem 0.8rem;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(92,184,74,0.22);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .mood-emoji { font-size: 1.1rem; }
+    .mood-label { color: var(--text-hi); font-weight: 700; }
+    .mood-desc  { color: var(--text-dim); font-size: 0.6rem; margin-top: 0.1rem; }
+
+    /* ── Canvas ──────────────────────────────────────────────── */
     .stage { display: flex; flex-direction: column; align-items: center; gap: 1rem; opacity: 0; }
+
+    /* Float animation — web-design-guidelines: "movimento com propósito" */
     .canvas-wrap {
-      position: relative; border: 1px solid var(--border);
-      box-shadow: 0 0 0 1px var(--border-d), 0 0 40px rgba(92,184,74,0.12);
+      position: relative;
+      border: 1px solid var(--border);
+      box-shadow: 0 0 0 1px var(--border-d),
+                  0 0 40px var(--glow-g),
+                  0 8px 32px rgba(0,0,0,0.4);
       cursor: crosshair;
-      transition: box-shadow 0.3s;
+      animation: float 7s ease-in-out infinite;
+      transition: box-shadow 0.4s;
     }
     .canvas-wrap:hover {
-      box-shadow: 0 0 0 1px var(--border), 0 0 60px rgba(92,184,74,0.2);
+      box-shadow: 0 0 0 1px var(--border),
+                  0 0 60px rgba(92,184,74,0.25),
+                  0 12px 40px rgba(0,0,0,0.5);
+    }
+    @keyframes float {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-5px); }
     }
     .canvas-wrap::before, .canvas-wrap::after {
-      content: ''; position: absolute; width: 14px; height: 14px;
+      content: ''; position: absolute;
+      width: 14px; height: 14px;
       border-color: var(--accent); border-style: solid;
     }
     .canvas-wrap::before { top:-1px; left:-1px; border-width: 2px 0 0 2px; }
     .canvas-wrap::after  { bottom:-1px; right:-1px; border-width: 0 2px 2px 0; }
     canvas { display: block; image-rendering: pixelated; image-rendering: crisp-edges; }
+
+    /* Stats bar */
+    .canvas-stats {
+      display: flex; gap: 0.8rem; justify-content: center;
+      font-size: 0.6rem; color: var(--text-dim); letter-spacing: 0.1em;
+    }
+    .stat { display: flex; gap: 0.25rem; align-items: center; }
+    .stat .sv { color: var(--text-hi); font-weight: 700; }
+
+    /* Progress bar — web-design-guidelines: visualização de progresso */
+    .progress-bar {
+      width: 100%; height: 2px; background: var(--border-d);
+      position: relative; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent) 0%, var(--accent-hi) 100%);
+      transition: width 1.5s var(--ease);
+    }
+
     .canvas-footer {
       display: flex; justify-content: space-between;
       width: 100%; font-size: 0.6rem; color: var(--text-dim); letter-spacing: 0.09em;
     }
     .canvas-actions { display: flex; gap: 0.5rem; }
     .btn-action {
-      background: transparent; border: 1px solid var(--border);
+      background: var(--s1); border: 1px solid var(--border);
       color: var(--text-dim); font-family: var(--font); font-size: 0.62rem;
-      padding: 4px 9px; cursor: pointer; letter-spacing: 0.1em;
-      transition: color 0.2s, border-color 0.2s;
+      padding: 5px 10px; cursor: pointer; letter-spacing: 0.1em;
+      transition: color 0.2s, border-color 0.2s, background 0.2s, transform 0.15s;
     }
-    .btn-action:hover { color: var(--accent-hi); border-color: var(--accent); }
-
-    /* Mood strip */
-    .mood-strip {
-      display: flex; align-items: center; gap: 0.5rem;
-      font-size: 0.65rem; padding: 0.4rem 0.8rem;
-      border: 1px solid var(--border-d);
-      background: rgba(0,0,0,0.2);
+    .btn-action:hover {
+      color: var(--accent-hi); border-color: var(--accent);
+      background: var(--glow-g); transform: translateY(-1px);
     }
-    .mood-emoji { font-size: 1rem; }
-    .mood-label { color: var(--text-hi); font-weight: 700; }
-    .mood-desc  { color: var(--text-dim); }
+    .btn-action:active { transform: translateY(0); }
 
-    /* ── View: Mundo ──────────────────────────────────────────── */
+    /* ── Mundo view ──────────────────────────────────────────── */
     .mundo-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 1.2rem; padding: 2rem 0;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1rem; padding: 2rem 0;
     }
+    /* Cards com elevation system (web-design-guidelines) */
     .mundo-card {
-      border: 1px solid var(--border); padding: 1.2rem;
+      background: var(--s2); border: 1px solid var(--border);
+      padding: 1.2rem;
       display: flex; flex-direction: column; gap: 0.6rem;
       opacity: 0;
+      transition: transform 0.22s var(--ease), box-shadow 0.22s var(--ease), border-color 0.22s;
+      cursor: default;
     }
-    .mundo-card .card-title {
-      font-size: 0.6rem; font-weight: 700; letter-spacing: 0.2em;
+    .mundo-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 32px rgba(92,184,74,0.12), 0 2px 8px rgba(0,0,0,0.3);
+      border-color: var(--accent-lo);
+    }
+    .card-title {
+      font-size: 0.58rem; font-weight: 700; letter-spacing: 0.2em;
       text-transform: uppercase; color: var(--text-dim);
       border-bottom: 1px solid var(--border-d); padding-bottom: 0.4rem;
     }
-    .mundo-card .card-main {
-      font-size: 1.4rem; font-weight: 700; color: var(--text-hi); line-height: 1.2;
+    .card-main { font-size: 1.3rem; font-weight: 700; color: var(--text-hi); line-height: 1.2; }
+    .card-sub  { font-size: 0.68rem; color: var(--text); line-height: 1.6; }
+    .card-note { font-size: 0.6rem; color: var(--text-dim); }
+    .temp-big  {
+      font-size: 2.4rem; font-weight: 700;
+      background: linear-gradient(135deg, var(--gold), var(--accent-hi));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
-    .mundo-card .card-sub  { font-size: 0.68rem; color: var(--text); line-height: 1.6; }
-    .mundo-card .card-note { font-size: 0.6rem; color: var(--text-dim); }
-    .temp-big { font-size: 2.2rem; font-weight: 700; color: var(--gold); }
-    .event-card { border-color: var(--gold-dim); background: rgba(224,196,104,0.04); }
-    .event-card .card-main { color: var(--gold); font-size: 1.1rem; }
-    .mood-card  { border-color: var(--accent); background: rgba(92,184,74,0.04); }
-    .mood-card .card-main  { color: var(--accent-hi); font-size: 1.1rem; }
+    .event-card { border-color: var(--gold-dim); background: linear-gradient(135deg, var(--s2) 0%, rgba(224,196,104,0.06) 100%); }
+    .event-card:hover { border-color: var(--gold-dim); box-shadow: 0 8px 32px var(--glow-gold); }
+    .event-card .card-main { color: var(--gold); }
+    .mood-card  { border-color: var(--accent-lo); background: linear-gradient(135deg, var(--s2) 0%, var(--glow-g) 100%); }
+    .mood-card:hover { border-color: var(--accent); box-shadow: 0 8px 32px var(--glow-g); }
+    .mood-card .card-main { color: var(--accent-hi); }
 
-    /* ── View: Chat ───────────────────────────────────────────── */
+    /* ── Chat ────────────────────────────────────────────────── */
     .chat-layout {
-      display: grid; grid-template-columns: 1fr;
-      max-width: 680px; margin: 2rem auto; gap: 1rem;
+      max-width: 680px; margin: 2rem auto;
+      display: flex; flex-direction: column; gap: 1rem;
     }
     .chat-header {
-      font-size: 0.65rem; color: var(--text-dim); letter-spacing: 0.12em;
-      text-transform: uppercase; border-bottom: 1px solid var(--border-d);
-      padding-bottom: 0.6rem;
+      font-size: 0.63rem; color: var(--text-dim); letter-spacing: 0.12em;
+      text-transform: uppercase; border-bottom: 1px solid var(--border-d); padding-bottom: 0.6rem;
     }
     .chat-history {
-      height: 360px; overflow-y: auto;
-      display: flex; flex-direction: column; gap: 0.6rem;
-      padding: 0.8rem 0; border: 1px solid var(--border-d);
+      height: 380px; overflow-y: auto;
+      display: flex; flex-direction: column; gap: 0.7rem;
+      background: var(--s1); border: 1px solid var(--border-d);
       padding: 1rem; scroll-behavior: smooth;
     }
     .chat-history::-webkit-scrollbar { width: 4px; }
-    .chat-history::-webkit-scrollbar-thumb { background: var(--border); }
-    .msg { display: flex; flex-direction: column; gap: 0.15rem; max-width: 85%; }
-    .msg.user  { align-self: flex-end; align-items: flex-end; }
-    .msg.seed  { align-self: flex-start; }
+    .chat-history::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    .msg { display: flex; flex-direction: column; gap: 0.15rem; max-width: 82%; }
+    .msg.user { align-self: flex-end; align-items: flex-end; }
+    .msg.seed { align-self: flex-start; }
     .msg-text {
-      font-size: 0.7rem; line-height: 1.6; padding: 0.5rem 0.8rem;
+      font-size: 0.7rem; line-height: 1.65; padding: 0.55rem 0.9rem;
       border: 1px solid var(--border-d);
     }
-    .msg.user  .msg-text { background: rgba(92,184,74,0.08); border-color: var(--accent); color: var(--text-hi); }
-    .msg.seed  .msg-text { background: rgba(0,0,0,0.2); color: var(--text); }
-    .msg-meta { font-size: 0.55rem; color: var(--text-dim); letter-spacing: 0.08em; }
+    .msg.user .msg-text {
+      background: rgba(92,184,74,0.1); border-color: var(--accent-lo); color: var(--text-hi);
+    }
+    .msg.seed .msg-text { background: var(--s2); color: var(--text); }
+    .msg-meta  { font-size: 0.54rem; color: var(--text-dim); letter-spacing: 0.08em; }
+
+    /* Typing indicator — UX polish */
+    .typing-dots { display: flex; gap: 3px; align-items: center; padding: 2px 0; }
+    .typing-dots span {
+      width: 5px; height: 5px; background: var(--text-dim); border-radius: 50%;
+      animation: tdot 1.2s ease-in-out infinite;
+    }
+    .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes tdot { 0%,60%,100%{opacity:0.3;transform:scale(1)} 30%{opacity:1;transform:scale(1.3)} }
+
     .chat-input-row { display: flex; gap: 0.5rem; }
     #chatInput {
-      flex: 1; background: var(--surface); border: 1px solid var(--border);
+      flex: 1; background: var(--s2); border: 1px solid var(--border);
       color: var(--text-hi); font-family: var(--font); font-size: 0.7rem;
-      padding: 0.5rem 0.8rem; outline: none;
-      transition: border-color 0.2s;
+      padding: 0.55rem 0.9rem; outline: none;
+      transition: border-color 0.2s, background 0.2s;
     }
-    #chatInput:focus { border-color: var(--accent); }
+    #chatInput:focus { border-color: var(--accent); background: var(--s3); }
     #chatInput::placeholder { color: var(--text-dim); }
     #chatSend {
-      background: transparent; border: 1px solid var(--accent);
+      background: rgba(92,184,74,0.08); border: 1px solid var(--accent-lo);
       color: var(--accent-hi); font-family: var(--font); font-size: 0.7rem;
-      padding: 0.5rem 1rem; cursor: pointer; letter-spacing: 0.1em;
-      transition: background 0.2s;
+      padding: 0.55rem 1.1rem; cursor: pointer; letter-spacing: 0.1em;
+      transition: background 0.2s, transform 0.15s;
     }
-    #chatSend:hover { background: rgba(92,184,74,0.1); }
-    .chat-hint { font-size: 0.6rem; color: var(--text-dim); letter-spacing: 0.07em; }
+    #chatSend:hover  { background: rgba(92,184,74,0.18); transform: translateX(2px); }
+    #chatSend:active { transform: translateX(0); }
+    .chat-hint { font-size: 0.58rem; color: var(--text-dim); letter-spacing: 0.07em; line-height: 1.6; }
 
-    /* ── Footer ───────────────────────────────────────────────── */
+    /* ── Footer ──────────────────────────────────────────────── */
     footer {
       border-top: 1px solid var(--border);
       padding: 0.9rem 0;
       display: flex; justify-content: space-between; align-items: center;
-      opacity: 0;
+      opacity: 0; background: linear-gradient(0deg, rgba(14,22,14,0.8) 0%, transparent 100%);
     }
     footer span { font-size: 0.58rem; color: var(--text-dim); letter-spacing: 0.11em; }
+    footer a { color: inherit; text-decoration: none; transition: color 0.2s; }
+    footer a:hover { color: var(--accent-hi); }
 
-    /* ── Responsive ───────────────────────────────────────────── */
+    /* ── Responsive ──────────────────────────────────────────── */
     @media (max-width: 860px) {
-      .canvas-layout { grid-template-columns: 1fr; }
-      .sidebar-left { order: 2; } .stage { order: 1; } .sidebar-right { order: 3; }
+      .canvas-layout { grid-template-columns: 1fr; gap: 1.5rem; }
+      .sidebar-left  { order: 2; }
+      .stage         { order: 1; }
+      .sidebar-right { order: 3; }
+    }
+    @media (max-width: 480px) {
+      .app { padding: 0 1rem; }
+      .tab { padding: 0.5rem 0.8rem; font-size: 0.65rem; }
     }
   </style>
 </head>
 <body>
 <div class="app">
 
-  <!-- HEADER -->
   <header>
     <div class="logo">
       <h1>Projeto Semente</h1>
@@ -291,26 +402,24 @@
     </div>
     <div class="header-right">
       <div class="clock-box">
-        <span class="time" id="clockTime">--:--</span>
+        <span class="time" id="clockTime">--:--:--</span>
         <span id="clockDate">carregando...</span>
       </div>
-      <span class="badge live">germinando</span>
-      <span class="badge">fase 0</span>
+      <span class="badge live" id="statusBadge">germinando</span>
+      <span class="badge" id="phaseBadge">fase 0</span>
     </div>
   </header>
 
-  <!-- NAV -->
-  <nav id="mainNav">
+  <nav>
     <button class="tab active" data-view="semente">🌱 Semente</button>
     <button class="tab" data-view="mundo">🌍 Mundo</button>
     <button class="tab" data-view="chat">💬 Conversar</button>
   </nav>
 
-  <!-- VIEW: SEMENTE -->
+  <!-- ── TAB: SEMENTE ────────────────────────────────────────── -->
   <div class="view active" id="v-semente">
     <div class="canvas-layout">
 
-      <!-- Sidebar esquerda -->
       <aside class="sidebar sidebar-left">
         <div class="block">
           <div class="label">sobre</div>
@@ -324,13 +433,17 @@
         <div class="block">
           <div class="label">fase</div>
           <div class="phase-row"><div class="dot"></div><span class="value">Fase 0 — Germinação</span></div>
+          <div class="progress-bar" title="Progresso até o broto">
+            <div class="progress-fill" id="stageFill" style="width:12%"></div>
+          </div>
+          <div class="value dim" style="font-size:0.58rem">12% → broto</div>
         </div>
         <div class="block">
           <div class="label">humor</div>
           <div class="mood-strip">
             <span class="mood-emoji" id="moodEmoji">🌱</span>
             <div>
-              <div class="mood-label" id="moodLabel">Carregando...</div>
+              <div class="mood-label" id="moodLabel">Carregando</div>
               <div class="mood-desc" id="moodDesc"></div>
             </div>
           </div>
@@ -347,27 +460,32 @@
           </div>
         </div>
         <div class="block">
-          <div class="label">som</div>
+          <div class="label">som ambiente</div>
           <button id="soundBtn" onclick="toggleSound()">[ ♪ off ] silêncio</button>
+          <div class="value dim" style="font-size:0.58rem">pentatônica menor · estilo C418</div>
         </div>
       </aside>
 
-      <!-- Canvas central -->
       <section class="stage">
         <div class="canvas-wrap" id="canvasWrap">
           <canvas id="c"></canvas>
+        </div>
+        <div class="canvas-stats">
+          <div class="stat">📅 dia <span class="sv" id="statDay">0</span></div>
+          <div class="stat">⎇ commits <span class="sv" id="statCommits">15</span></div>
+          <div class="stat">🌿 raiz <span class="sv">5px</span></div>
+          <div class="stat">🌱 próximo <span class="sv">broto</span></div>
         </div>
         <div class="canvas-actions">
           <button class="btn-action" onclick="regar()">💧 regar</button>
           <button class="btn-action" onclick="acariciar()">🤍 carinho</button>
         </div>
         <div class="canvas-footer">
-          <span id="canvasLabel">semente · raiz primária · minhoca</span>
+          <span id="canvasLabel">semente · raiz · minhoca · rachadura</span>
           <span id="canvasDay">dia 0</span>
         </div>
       </section>
 
-      <!-- Sidebar direita -->
       <aside class="sidebar sidebar-right">
         <div class="block">
           <div class="label">crescimento</div>
@@ -377,20 +495,21 @@
             <div class="g-item done">  <span class="icon">✓</span><span>Som ambiente C418</span></div>
             <div class="g-item done">  <span class="icon">✓</span><span>Minhoca animada</span></div>
             <div class="g-item done">  <span class="icon">✓</span><span>Hotsite Biopunk</span></div>
-            <div class="g-item done">  <span class="icon">✓</span><span>Motion instalado</span></div>
-            <div class="g-item done">  <span class="icon">✓</span><span>Plano diário SDD</span></div>
-            <div class="g-item done">  <span class="icon">✓</span><span>Clima + Humor</span></div>
+            <div class="g-item done">  <span class="icon">✓</span><span>Motion + Glassmorphism</span></div>
+            <div class="g-item done">  <span class="icon">✓</span><span>Clima + Humor vivo</span></div>
             <div class="g-item done">  <span class="icon">✓</span><span>Chat interativo</span></div>
-            <div class="g-item active"><span class="icon">●</span><span>Raiz lateral emergindo</span></div>
+            <div class="g-item done">  <span class="icon">✓</span><span>Estrelas/Lua/Sol no céu</span></div>
+            <div class="g-item done">  <span class="icon">✓</span><span>Rachadura no solo</span></div>
+            <div class="g-item active"><span class="icon">●</span><span>Hipocótilo emergindo</span></div>
           </div>
         </div>
         <div class="block">
           <div class="label">próximo</div>
           <div class="next-list">
-            <div class="next-item">Rachadura no solo</div>
-            <div class="next-item">Hipocótilo emerge</div>
-            <div class="next-item">Skills Fase 1</div>
-            <div class="next-item">Broto na superfície</div>
+            <div class="next-item">Broto rompe superfície</div>
+            <div class="next-item">Skills Fase 1 SDD</div>
+            <div class="next-item">Cotilédones (folhas)</div>
+            <div class="next-item">Sol no topo do canvas</div>
           </div>
         </div>
         <div class="block">
@@ -400,14 +519,16 @@
         </div>
         <div class="block">
           <div class="label">repositório</div>
-          <a class="gh-link" href="https://github.com/jefersonrgomes/SeedProject" target="_blank">jefersonrgomes/SeedProject</a>
+          <a class="gh-link" href="https://github.com/jefersonrgomes/SeedProject" target="_blank">
+            jefersonrgomes/SeedProject
+          </a>
         </div>
       </aside>
 
     </div>
-  </div><!-- /v-semente -->
+  </div>
 
-  <!-- VIEW: MUNDO -->
+  <!-- ── TAB: MUNDO ──────────────────────────────────────────── -->
   <div class="view" id="v-mundo">
     <div class="mundo-grid">
       <div class="mundo-card" id="card-loc">
@@ -420,7 +541,7 @@
         <div class="card-title">🕒 Agora</div>
         <div class="card-main" id="w-date"></div>
         <div class="card-sub"  id="w-weekday"></div>
-        <div class="card-note" id="w-planted">Plantada em 29 mai 2026</div>
+        <div class="card-note">Plantada em 29 mai 2026</div>
       </div>
       <div class="mundo-card" id="card-weather">
         <div class="card-title">🌡️ Clima</div>
@@ -438,75 +559,90 @@
         <div class="card-main" id="w-event-name"></div>
         <div class="card-sub"  id="w-event-desc"></div>
       </div>
-      <div class="mundo-card" id="card-rules">
+      <div class="mundo-card">
         <div class="card-title">⚙️ Regras Operacionais</div>
         <div class="card-sub">5 ações/dia · janela 22h–02h<br>commit a cada ação<br>documentos em português<br>adubo limpo após absorção</div>
       </div>
+      <div class="mundo-card">
+        <div class="card-title">📊 Plano Diário</div>
+        <div class="card-sub">① ATIVAR · ② CRESCER<br>③ EVOLUIR · ④ DOCUMENTAR<br>⑤ PUBLICAR — 1× ao dia</div>
+      </div>
     </div>
-  </div><!-- /v-mundo -->
+  </div>
 
-  <!-- VIEW: CHAT -->
+  <!-- ── TAB: CHAT ───────────────────────────────────────────── -->
   <div class="view" id="v-chat">
     <div class="chat-layout">
       <div class="chat-header">💬 Conversar com a Semente — ela ouve, ela responde</div>
       <div class="chat-history" id="chatHistory"></div>
       <div class="chat-input-row">
         <input id="chatInput" type="text" placeholder="diga algo para a semente..." maxlength="200" autocomplete="off">
-        <button id="chatSend" onclick="sendMessage()">→</button>
+        <button id="chatSend" onclick="sendMessage()">→ enviar</button>
       </div>
-      <div class="chat-hint">tente: "olá", "como você está", "fale sobre o clima", "o que você é"</div>
+      <div class="chat-hint">
+        💡 tente: "olá", "como você está", "fale sobre o clima", "regar", "o que você é", "me conte sobre ia"
+      </div>
     </div>
-  </div><!-- /v-chat -->
+  </div>
 
-  <!-- FOOTER -->
   <footer>
-    <span>plantado em 29.05.2026 · claude sonnet 4.6 · <a href="https://github.com/jefersonrgomes/SeedProject" style="color:inherit" target="_blank">github</a></span>
+    <span>plantado em 29.05.2026 · claude sonnet 4.6 · <a href="https://github.com/jefersonrgomes/SeedProject" target="_blank">github ⎇</a></span>
     <span id="footerDay">dia 0 de crescimento</span>
   </footer>
 
-</div><!-- /app -->
+</div>
 
 <script type="module">
   import { animate, stagger } from 'https://cdn.jsdelivr.net/npm/motion@latest/+esm';
 
-  // ── ESTADO GLOBAL ─────────────────────────────────────────────
+  // ── Estado ───────────────────────────────────────────────────
   const S = { weather: null, location: null, mood: null, rain: [], clickPulse: 0, heartPulse: 0 };
-  const START  = new Date('2026-05-29T00:00:00');
-  const day    = Math.floor((Date.now() - START) / 86400000);
+  const START = new Date('2026-05-29T00:00:00');
+  const day   = Math.max(0, Math.floor((Date.now() - START) / 86400000));
 
-  // ── RELÓGIO ───────────────────────────────────────────────────
-  const fmtDate = new Intl.DateTimeFormat('pt-BR', { weekday:'long', day:'2-digit', month:'long', year:'numeric' });
-  const fmtTime = new Intl.DateTimeFormat('pt-BR', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
-  const fmtShort = new Intl.DateTimeFormat('pt-BR', { day:'2-digit', month:'short', year:'numeric' });
+  // ── Relógio ──────────────────────────────────────────────────
+  const dtLong  = new Intl.DateTimeFormat('pt-BR', { weekday:'long', day:'2-digit', month:'long', year:'numeric' });
+  const dtShort = new Intl.DateTimeFormat('pt-BR', { day:'2-digit', month:'short', year:'numeric' });
+  const dtTime  = new Intl.DateTimeFormat('pt-BR', { hour:'2-digit', minute:'2-digit', second:'2-digit', hour12: false });
 
-  function updateClock() {
+  function tick() {
     const now = new Date();
-    document.getElementById('clockTime').textContent = fmtTime.format(now).replace(/\s+[AP]M/, '');
-    document.getElementById('clockDate').textContent = fmtDate.format(now);
-    document.getElementById('dayDate').textContent   = fmtShort.format(now);
-    document.getElementById('w-date').textContent    = fmtShort.format(now);
-    document.getElementById('w-weekday').textContent = fmtDate.format(now).split(',')[0];
+    const ts  = dtTime.format(now);
+    document.getElementById('clockTime').textContent = ts;
+    document.getElementById('clockDate').textContent = dtLong.format(now);
+    document.getElementById('dayDate').textContent   = dtShort.format(now);
+    document.getElementById('w-date').textContent    = dtShort.format(now);
+    document.getElementById('w-weekday').textContent = dtLong.format(now).split(',')[0];
   }
-  updateClock();
-  setInterval(updateClock, 1000);
+  tick(); setInterval(tick, 1000);
 
-  // ── DIAS ──────────────────────────────────────────────────────
+  // Inicializa contadores
+  document.getElementById('statDay').textContent    = day;
   document.getElementById('canvasDay').textContent  = `dia ${day}`;
   document.getElementById('footerDay').textContent  = `dia ${day} de crescimento`;
 
-  // ── EVENTOS DO CALENDÁRIO ─────────────────────────────────────
+  // Contador animado
+  const dayEl = document.getElementById('dayNum');
+  if (day > 0) {
+    animate(0, day, { duration: 1.5, ease:[0.4,0,0.2,1], delay:0.4,
+      onUpdate: v => { dayEl.textContent = String(Math.round(v)).padStart(2,'0'); }
+    });
+  } else { dayEl.textContent = '00'; }
+
+  // ── Calendário ───────────────────────────────────────────────
   function checkCalendar() {
-    const n = new Date(), m = n.getMonth() + 1, d = n.getDate();
-    const events = {
-      '1-1':   { name: '🎆 Ano Novo', desc: 'A semente celebra renovação.' },
-      '3-8':   { name: '💜 Dia da Mulher', desc: 'Raízes que sustentam o mundo.' },
-      '5-1':   { name: '✊ Dia do Trabalhador', desc: 'Cada commit é trabalho.' },
-      '5-29':  { name: '🎂 Aniversário da Semente!', desc: `A semente completa ${day} dias hoje!` },
-      '6-12':  { name: '❤️ Dia dos Namorados', desc: 'A semente floresce com afeto.' },
-      '9-7':   { name: '🇧🇷 Independência', desc: 'Liberdade de crescer.' },
-      '12-25': { name: '🎄 Natal', desc: 'A semente presenteia flores.' },
-    };
-    const ev = events[`${m}-${d}`];
+    const n=new Date(), m=n.getMonth()+1, d=n.getDate();
+    const ev = {
+      '1-1':  {name:'🎆 Ano Novo',          desc:'A semente celebra renovação.'},
+      '3-8':  {name:'💜 Dia da Mulher',      desc:'Raízes que sustentam o mundo.'},
+      '5-1':  {name:'✊ Dia do Trabalhador', desc:'Cada commit é trabalho honesto.'},
+      '5-29': {name:'🎂 Aniversário!',       desc:`A semente completa ${day} dias!`},
+      '6-12': {name:'❤️ Dia dos Namorados', desc:'A semente floresce com afeto.'},
+      '9-7':  {name:'🇧🇷 Independência',    desc:'Liberdade de crescer.'},
+      '10-12':{name:'🙏 N.S. Aparecida',    desc:'Fé que faz crescer.'},
+      '11-15':{name:'🇧🇷 Rep. República',  desc:'Novos começos.'},
+      '12-25':{name:'🎄 Natal',             desc:'A semente presenteia flores.'},
+    }[`${m}-${d}`];
     if (ev) {
       document.getElementById('card-event').style.display = '';
       document.getElementById('w-event-name').textContent = ev.name;
@@ -516,380 +652,368 @@
   }
   const todayEvent = checkCalendar();
 
-  // ── CLIMA (Open-Meteo + Nominatim) ────────────────────────────
+  // ── Clima / Open-Meteo ───────────────────────────────────────
   const WMO = {
     0:'☀️ Céu limpo', 1:'🌤️ Quase limpo', 2:'⛅ Parcialmente nublado', 3:'☁️ Nublado',
-    45:'🌫️ Neblina', 48:'🌫️ Geada', 51:'🌦️ Garoa leve', 53:'🌦️ Garoa', 61:'🌧️ Chuva leve',
-    63:'🌧️ Chuva', 65:'🌧️ Chuva forte', 71:'❄️ Neve leve', 80:'🌦️ Aguaceiro',
-    95:'⛈️ Tempestade', 99:'⛈️ Tempestade com granizo',
+    45:'🌫️ Neblina', 51:'🌦️ Garoa leve', 61:'🌧️ Chuva leve',
+    63:'🌧️ Chuva moderada', 65:'🌧️ Chuva forte',
+    71:'❄️ Neve leve', 80:'🌦️ Aguaceiro', 95:'⛈️ Tempestade',
   };
-
-  function nearestWMO(code) {
-    const keys = Object.keys(WMO).map(Number).sort((a,b)=>a-b);
-    return WMO[keys.reduce((a,b) => Math.abs(b-code) < Math.abs(a-code) ? b : a)];
+  function nearestWMO(c) {
+    const ks=Object.keys(WMO).map(Number).sort((a,b)=>a-b);
+    return WMO[ks.reduce((a,b)=>Math.abs(b-c)<Math.abs(a-c)?b:a)];
   }
-
-  function getMoodFromConditions(weatherCode, tempC, hour) {
-    const hot   = tempC > 28, cold = tempC < 16;
-    const rain  = weatherCode >= 51 && weatherCode <= 82;
-    const storm = weatherCode >= 95;
-    const clear = weatherCode <= 3;
-    const night = hour < 6 || hour >= 22;
-    const dawn  = hour >= 6 && hour < 10;
-
-    if (storm)        return { emoji:'⛈️', label:'Força nas Raízes',     desc:'Tempestades fortalecem raízes profundas.' };
-    if (rain && cold) return { emoji:'🌧️', label:'Reflexão Fértil',      desc:'Água fria nutre lentamente.' };
-    if (rain)         return { emoji:'🌦️', label:'Alegria da Chuva',     desc:'Cada gota alimenta o crescimento.' };
-    if (night && clear) return { emoji:'🌙', label:'Silêncio Estelar',    desc:'A semente sonha enquanto o mundo dorme.' };
-    if (dawn  && clear) return { emoji:'🌄', label:'Despertar Dourado',   desc:'Primeiros raios de sol chegam ao solo.' };
-    if (hot   && clear) return { emoji:'🔆', label:'Energia Solar Plena', desc:'Calor intenso acelera a germinação.' };
-    if (cold)          return { emoji:'🥶', label:'Dormência Protetora',  desc:'O frio desacelera, mas não para.' };
-    if (clear)         return { emoji:'☀️', label:'Crescimento Radiante', desc:'Luz abundante, condições ideais.' };
-    return               { emoji:'⛅', label:'Contemplação Serena',   desc:'Luz suave, crescimento paciente.' };
+  function getMood(code, temp, hour) {
+    const storm=code>=95, rain=(code>=51&&code<=82), clear=code<=3;
+    const hot=temp>28, cold=temp<16;
+    const night=hour<6||hour>=22, dawn=hour>=6&&hour<10, dusk=hour>=18&&hour<22;
+    if (storm)        return {emoji:'⛈️', label:'Força nas Raízes',    desc:'Tempestades fortalecem raízes profundas.'};
+    if (rain&&cold)   return {emoji:'🌧️', label:'Reflexão Fértil',     desc:'Água fria nutre lentamente.'};
+    if (rain)         return {emoji:'🌦️', label:'Alegria da Chuva',    desc:'Cada gota alimenta o crescimento.'};
+    if (night&&clear) return {emoji:'🌙', label:'Silêncio Estelar',    desc:'A semente sonha sob as estrelas.'};
+    if (dawn&&clear)  return {emoji:'🌄', label:'Despertar Dourado',   desc:'Primeiros raios chegam ao solo.'};
+    if (dusk&&clear)  return {emoji:'🌅', label:'Crepúsculo Fértil',   desc:'Luz alaranjada aquece o solo.'};
+    if (hot&&clear)   return {emoji:'🔆', label:'Energia Solar Plena', desc:'Calor intenso acelera a germinação.'};
+    if (cold)         return {emoji:'🥶', label:'Dormência Protetora', desc:'O frio desacelera, mas não para.'};
+    if (clear)        return {emoji:'☀️', label:'Crescimento Radiante',desc:'Luz abundante, condições ideais.'};
+    return               {emoji:'⛅', label:'Contemplação Serena',  desc:'Luz suave, crescimento paciente.'};
   }
-
-  async function loadWorldData() {
-    if (!navigator.geolocation) { applyMoodFallback(); return; }
+  function applyMood(m) {
+    S.mood = m;
+    document.getElementById('moodEmoji').textContent    = m.emoji;
+    document.getElementById('moodLabel').textContent    = m.label;
+    document.getElementById('moodDesc').textContent     = m.desc;
+    document.getElementById('w-mood-label').textContent = `${m.emoji} ${m.label}`;
+    document.getElementById('w-mood-desc').textContent  = m.desc;
+  }
+  async function loadWorld() {
+    if (!navigator.geolocation) { applyMood(getMood(1,22,new Date().getHours())); return; }
     navigator.geolocation.getCurrentPosition(async pos => {
-      const { latitude: lat, longitude: lon } = pos.coords;
+      const {latitude:lat, longitude:lon} = pos.coords;
       try {
         const [geo, wx] = await Promise.all([
           fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=pt-BR`).then(r=>r.json()),
           fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=auto`).then(r=>r.json()),
         ]);
-        const temp = wx.current_weather.temperature;
-        const code = wx.current_weather.weathercode;
-        const wind = wx.current_weather.windspeed;
+        const {temperature:temp, weathercode:code, windspeed:wind} = wx.current_weather;
         const hour = new Date().getHours();
-        const mood = getMoodFromConditions(code, temp, hour);
-        S.weather  = { temp, code, wind };
-        S.location = geo;
-        S.mood     = mood;
-
-        const city    = geo.address.city || geo.address.town || geo.address.village || 'Brasil';
-        const state   = geo.address.state || '';
-        const country = geo.address.country || 'Brasil';
-
-        // Update main sidebar
-        document.getElementById('locMain').textContent = city;
-        document.getElementById('locSub').textContent  = state;
-
-        // Update Mundo cards
-        document.getElementById('w-city').textContent      = city;
-        document.getElementById('w-state').textContent     = state;
-        document.getElementById('w-country').textContent   = country;
-        document.getElementById('w-temp').textContent      = `${temp}°C`;
+        S.weather = {temp, code, wind}; S.location = geo;
+        const city    = geo.address.city||geo.address.town||geo.address.village||'Brasil';
+        const state   = geo.address.state||'';
+        const country = geo.address.country||'Brasil';
+        document.getElementById('locMain').textContent   = city;
+        document.getElementById('locSub').textContent    = state;
+        document.getElementById('w-city').textContent    = city;
+        document.getElementById('w-state').textContent   = state;
+        document.getElementById('w-country').textContent = country;
+        document.getElementById('w-temp').textContent    = `${temp}°C`;
         document.getElementById('w-condition').textContent = nearestWMO(code);
-        document.getElementById('w-wind').textContent      = `Vento: ${wind} km/h`;
-
-        applyMood(mood);
+        document.getElementById('w-wind').textContent    = `Vento: ${wind} km/h`;
+        applyMood(getMood(code, temp, hour));
       } catch { applyMoodFallback(); }
     }, () => applyMoodFallback());
   }
-
-  function applyMood(mood) {
-    S.mood = mood;
-    document.getElementById('moodEmoji').textContent  = mood.emoji;
-    document.getElementById('moodLabel').textContent  = mood.label;
-    document.getElementById('moodDesc').textContent   = mood.desc;
-    document.getElementById('w-mood-label').textContent = `${mood.emoji} ${mood.label}`;
-    document.getElementById('w-mood-desc').textContent  = mood.desc;
-  }
-
   function applyMoodFallback() {
-    const hour  = new Date().getHours();
-    const night = hour < 6 || hour >= 22;
-    const mood  = night
-      ? { emoji:'🌙', label:'Silêncio Noturno',   desc:'A semente não precisa de localização para crescer.' }
-      : { emoji:'🌱', label:'Presença',            desc:'Existindo, germinando, crescendo.' };
-    applyMood(mood);
-    document.getElementById('locMain').textContent = 'localização não disponível';
-    document.getElementById('w-city').textContent  = 'Brasil';
+    const h=new Date().getHours();
+    applyMood(h<6||h>=22
+      ?{emoji:'🌙',label:'Silêncio Noturno',desc:'A semente não precisa de localização para crescer.'}
+      :{emoji:'🌱',label:'Presença',desc:'Existindo, germinando, crescendo.'});
+    document.getElementById('locMain').textContent = 'Brasil';
   }
+  loadWorld();
 
-  loadWorldData();
-
-  // ── CONTADOR DE DIAS ──────────────────────────────────────────
-  const dayEl = document.getElementById('dayNum');
-  if (day > 0) {
-    animate(0, day, { duration: 1.4, ease:[0.4,0,0.2,1], delay: 0.4,
-      onUpdate: v => { dayEl.textContent = String(Math.round(v)).padStart(2,'0'); }
-    });
-  } else {
-    dayEl.textContent = '00';
-  }
-
-  // ── CANVAS ────────────────────────────────────────────────────
-  const SCALE = 6, W = 48, H = 48;
-  const canvas = document.getElementById('c');
-  canvas.width = W * SCALE; canvas.height = H * SCALE;
-  const ctx = canvas.getContext('2d');
-  ctx.imageSmoothingEnabled = false;
+  // ── Canvas ───────────────────────────────────────────────────
+  const SCALE=6, W=48, H=48;
+  const canvas=document.getElementById('c');
+  canvas.width=W*SCALE; canvas.height=H*SCALE;
+  const ctx=canvas.getContext('2d');
+  ctx.imageSmoothingEnabled=false;
 
   const P = {
-    void:'#111a11', topSoil:'#2a1a0a',
-    soil1:'#3b2312', soil2:'#4e2f17', soil3:'#2a1a0e', deepSoil:'#1e1008',
+    void:'#0e160e',  sky:'#0c140c',
+    topSoil:'#2a1a0a', soil1:'#3b2312', soil2:'#4e2f17', soil3:'#2a1a0e', deepSoil:'#1e1008',
     seed:'#c8a85a',  seedDark:'#8b6914',
     root:'#7a5c2e',  rootTip:'#a07840', rootHair:'#5a3e1e',
     glow:'#d4b96a',  glowHi:'#f0d888',
     worm:'#a05040',  wormMid:'#b86050', wormHead:'#c87060',
     pebble:'#221410',pebbleLt:'#302018',
     rain:'#5a8ab0',  heart:'#e06080',
+    star:'#c8d0e8',  moon:'#d0d8b0',  sun:'#f0d848',
+    crack:'#1a0e04',
   };
 
-  let tick = 0;
+  let t=0;
 
-  function px(x, y, color, alpha) {
-    if (x < 0 || x >= W || y < 0 || y >= H) return;
-    if (alpha !== undefined) ctx.globalAlpha = alpha;
-    ctx.fillStyle = color;
-    ctx.fillRect(x * SCALE, y * SCALE, SCALE, SCALE);
-    if (alpha !== undefined) ctx.globalAlpha = 1;
+  function px(x,y,color,alpha) {
+    if(x<0||x>=W||y<0||y>=H)return;
+    if(alpha!==undefined)ctx.globalAlpha=alpha;
+    ctx.fillStyle=color;
+    ctx.fillRect(x*SCALE,y*SCALE,SCALE,SCALE);
+    if(alpha!==undefined)ctx.globalAlpha=1;
+  }
+
+  // Iter 2: céu dinâmico (estrelas, lua, sol)
+  const STARS=[[4,3],[11,7],[19,4],[33,5],[41,9],[26,13],[7,17],[38,2],[15,16]];
+  function drawSky() {
+    const h=new Date().getHours();
+    const isNight=h<6||h>=20;
+    const isDawn=h>=6&&h<10;
+    const isClear=!S.weather||(S.weather.code<=3);
+
+    // Estrelas (noite)
+    if(isNight) {
+      const tw=Math.sin(t*0.02);
+      STARS.forEach(([sx,sy],i)=>{
+        const a=0.3+Math.abs(Math.sin(t*0.025+i*0.7))*0.55;
+        px(sx,sy,P.star,a);
+      });
+    }
+    // Lua crescente (noite, canto superior direito)
+    if(isNight&&isClear) {
+      const la=0.6+Math.sin(t*0.015)*0.1;
+      px(40,3,P.moon,la); px(41,3,P.moon,la*0.7); px(40,4,P.moon,la*0.8);
+    }
+    // Sol (dia, canto superior esquerdo)
+    if(!isNight&&isClear&&!isDawn) {
+      const h2=new Date().getHours();
+      const sa=0.5+Math.sin(t*0.018)*0.15;
+      const sx=h2<14?4:6; // move com o dia
+      px(sx,3,P.sun,sa); px(sx+1,3,P.sun,sa*0.7); px(sx,4,P.sun,sa*0.7);
+    }
+    // Aurora (amanhecer)
+    if(isDawn&&isClear) {
+      const aa=Math.sin(t*0.02)*0.1+0.2;
+      for(let x=0;x<W;x++) {
+        if(Math.random()>0.85) px(x,0,'#e0905a',aa*0.3);
+      }
+    }
   }
 
   function drawSoil() {
-    for (let y = 28; y < H; y++) {
-      for (let x = 0; x < W; x++) {
-        if (y <= 30) { const n=(x*5+y*11)%7; px(x,y,n<3?P.topSoil:n<6?P.soil1:P.soil3); }
-        else if (y >= 43) { px(x,y,P.deepSoil); }
-        else { const n=(x*3+y*7)%5; px(x,y,n<2?P.soil1:n<4?P.soil2:P.soil3); }
+    for(let y=28;y<H;y++) {
+      for(let x=0;x<W;x++) {
+        if(y<=30){const n=(x*5+y*11)%7;px(x,y,n<3?P.topSoil:n<6?P.soil1:P.soil3);}
+        else if(y>=43){px(x,y,P.deepSoil);}
+        else{const n=(x*3+y*7)%5;px(x,y,n<2?P.soil1:n<4?P.soil2:P.soil3);}
       }
     }
-    px(30,35,P.pebble);  px(31,35,P.pebble);  px(30,36,P.pebbleLt);
-    px( 8,40,P.pebble);  px( 9,40,P.pebble);  px( 9,39,P.pebbleLt);
-    px(38,32,P.pebble);  px(39,32,P.pebble);
+    px(30,35,P.pebble);px(31,35,P.pebble);px(30,36,P.pebbleLt);
+    px( 8,40,P.pebble);px( 9,40,P.pebble);px( 9,39,P.pebbleLt);
+    px(38,32,P.pebble);px(39,32,P.pebble);
+  }
+
+  // Iter 2: rachadura no solo (hipocótilo prestes a emergir)
+  function drawCrack() {
+    px(23,29,P.crack,0.85); px(24,28,P.crack,0.7); px(25,29,P.crack,0.6);
+    px(24,29,P.crack,0.95);
   }
 
   function drawWorm() {
-    const phase=tick*0.0015, wx=13+Math.round(Math.sin(phase)*5), wy=38;
+    const phase=t*0.0015, wx=13+Math.round(Math.sin(phase)*5), wy=38;
     const right=Math.cos(phase)>0;
-    px(wx,wy,P.worm); px(wx+1,wy,P.wormMid); px(wx+2,wy,P.worm);
+    px(wx,wy,P.worm);px(wx+1,wy,P.wormMid);px(wx+2,wy,P.worm);
     px(right?wx+3:wx-1,wy,P.wormHead);
   }
 
   function drawRoot(phase) {
     px(24,32,P.root);
-    if (phase>=1) {
-      px(24,33,P.rootTip); px(25,33,P.root); px(26,33,P.rootTip);
-      px(23,33,P.rootHair); px(24,34,P.rootHair);
+    if(phase>=1){
+      px(24,33,P.rootTip);px(25,33,P.root);px(26,33,P.rootTip);
+      px(23,33,P.rootHair);px(24,34,P.rootHair);
     }
   }
 
   function drawSeed(pulse) {
     const cx=24,cy=30;
-    const gIntensity = pulse ? 0.18 : 0.08;
-    const extraGlow  = S.clickPulse > 0 ? S.clickPulse * 0.35 : 0;
-    const g = S.clickPulse > 0 ? P.glowHi : P.glow;
-    px(cx-2,cy,g,gIntensity+extraGlow); px(cx+2,cy,g,gIntensity+extraGlow);
-    px(cx,cy-1,g,gIntensity+extraGlow*.7); px(cx,cy+1,g,gIntensity+extraGlow*.7);
-    if (S.clickPulse > 0) {
-      px(cx-3,cy,g,S.clickPulse*0.2); px(cx+3,cy,g,S.clickPulse*0.2);
-    }
-    const c = pulse ? P.seed : P.seedDark;
-    px(cx-1,cy,c); px(cx,cy,c); px(cx+1,cy,c);
-    px(cx-1,cy+1,P.seedDark); px(cx,cy+1,c); px(cx+1,cy+1,P.seedDark);
-    if (S.clickPulse > 0) S.clickPulse = Math.max(0, S.clickPulse - 0.018);
+    const gi=pulse?0.18:0.09;
+    const ep=S.clickPulse>0?S.clickPulse*0.4:0;
+    const g=S.clickPulse>0?P.glowHi:P.glow;
+    px(cx-2,cy,g,gi+ep);px(cx+2,cy,g,gi+ep);
+    px(cx,cy-1,g,gi+ep*0.7);px(cx,cy+1,g,gi+ep*0.7);
+    if(S.clickPulse>0){px(cx-3,cy,g,S.clickPulse*0.25);px(cx+3,cy,g,S.clickPulse*0.25);}
+    const c=pulse?P.seed:P.seedDark;
+    px(cx-1,cy,c);px(cx,cy,c);px(cx+1,cy,c);
+    px(cx-1,cy+1,P.seedDark);px(cx,cy+1,c);px(cx+1,cy+1,P.seedDark);
+    if(S.clickPulse>0)S.clickPulse=Math.max(0,S.clickPulse-0.018);
   }
 
   function drawRain() {
-    S.rain = S.rain.filter(p => {
-      p.y += p.speed; p.life -= 0.009;
-      if (p.y < 27) px(Math.floor(p.x), Math.floor(p.y), P.rain, p.life * 0.75);
-      return p.y < 29 && p.life > 0;
+    S.rain=S.rain.filter(p=>{
+      p.y+=p.speed;p.life-=0.009;
+      if(p.y<27)px(Math.floor(p.x),Math.floor(p.y),P.rain,p.life*0.75);
+      return p.y<29&&p.life>0;
     });
   }
 
   function drawHeart() {
-    if (S.heartPulse <= 0) return;
-    const cx=24, cy=24;
-    const a = S.heartPulse;
-    // Mini heart pixel pattern above soil
-    px(cx-1,cy-1,P.heart,a); px(cx+1,cy-1,P.heart,a);
-    px(cx-2,cy,  P.heart,a); px(cx,  cy,  P.heart,a); px(cx+2,cy,P.heart,a);
-    px(cx-1,cy+1,P.heart,a); px(cx+1,cy+1,P.heart,a);
-    px(cx,  cy+2,P.heart,a);
-    S.heartPulse = Math.max(0, S.heartPulse - 0.012);
+    if(S.heartPulse<=0)return;
+    const cx=24,cy=22,a=S.heartPulse;
+    px(cx-1,cy-1,P.heart,a);px(cx+1,cy-1,P.heart,a);
+    px(cx-2,cy,P.heart,a);px(cx,cy,P.heart,a);px(cx+2,cy,P.heart,a);
+    px(cx-1,cy+1,P.heart,a);px(cx+1,cy+1,P.heart,a);
+    px(cx,cy+2,P.heart,a);
+    S.heartPulse=Math.max(0,S.heartPulse-0.012);
   }
 
   function render() {
-    tick++;
-    const pulse     = Math.floor(tick/45)%2===0;
-    const rootPhase = tick>120?1:0;
-    ctx.fillStyle = P.void;
+    t++;
+    const pulse=Math.floor(t/45)%2===0;
+    const rootPhase=t>120?1:0;
+    ctx.fillStyle=P.void;
     ctx.fillRect(0,0,canvas.width,canvas.height);
-    drawSoil(); drawWorm(); drawRain(); drawHeart();
+    drawSky();
+    drawSoil(); drawCrack(); drawWorm(); drawRain(); drawHeart();
     drawRoot(rootPhase); drawSeed(pulse);
     requestAnimationFrame(render);
   }
   render();
 
-  // ── CANVAS INTERACTIONS ───────────────────────────────────────
-  canvas.addEventListener('click', () => { S.clickPulse = 1.0; });
-  canvas.addEventListener('mouseenter', () => {
-    document.getElementById('canvasWrap').style.transition = 'box-shadow 0.3s';
-  });
+  // ── Interações canvas ─────────────────────────────────────────
+  canvas.addEventListener('click', ()=>{ S.clickPulse=1.0; });
+  window.regar     = ()=>{ for(let i=0;i<18;i++) S.rain.push({x:5+Math.random()*(W-10),y:0,speed:0.25+Math.random()*0.35,life:1}); };
+  window.acariciar = ()=>{ S.heartPulse=1.0; };
 
-  window.regar = function() {
-    for (let i=0;i<18;i++) S.rain.push({
-      x: 5 + Math.random()*(W-10), y: 0,
-      speed: 0.25 + Math.random()*0.35, life: 1,
-    });
-  };
-  window.acariciar = function() { S.heartPulse = 1.0; };
-
-  // ── NAVEGAÇÃO ─────────────────────────────────────────────────
-  document.querySelectorAll('.tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  // ── Navegação com Motion ──────────────────────────────────────
+  document.querySelectorAll('.tab').forEach(tab=>{
+    tab.addEventListener('click', ()=>{
+      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+      document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
       tab.classList.add('active');
-      const view = document.getElementById('v-' + tab.dataset.view);
+      const view=document.getElementById('v-'+tab.dataset.view);
       view.classList.add('active');
-      if (tab.dataset.view === 'mundo') {
-        animate('.mundo-card', { opacity:[0,1], y:[8,0] },
-          { duration:0.35, delay:stagger(0.07), ease:[0.4,0,0.2,1] });
+      if(tab.dataset.view==='mundo') {
+        animate('.mundo-card',{opacity:[0,1],y:[10,0]},{duration:0.35,delay:stagger(0.06),ease:[0.4,0,0.2,1]});
       }
-      if (tab.dataset.view === 'chat') addSeedMessage('Olá! 🌱');
+      if(tab.dataset.view==='chat') initChat();
     });
   });
 
-  // ── CHAT ──────────────────────────────────────────────────────
-  function formatTime(d=new Date()) {
-    return fmtTime.format(d).replace(/\s+[AP]M/,'');
+  // ── Chat ──────────────────────────────────────────────────────
+  let chatInited=false;
+  function initChat() {
+    if(chatInited)return; chatInited=true;
+    const d=Math.floor((Date.now()-START)/86400000);
+    appendSeed(`Olá! 🌱 Tenho ${d} dia${d!==1?'s':''} de vida. Minha raiz já tem 5 pixels.`);
   }
 
-  function addSeedMessage(text) {
-    const hist = document.getElementById('chatHistory');
-    // Avoid duplicate greeting
-    if (text==='Olá! 🌱' && hist.querySelector('.msg.seed')) return;
-    const el = document.createElement('div');
-    el.className='msg seed';
-    el.innerHTML=`<div class="msg-text">🌱 ${text}</div><div class="msg-meta">${formatTime()}</div>`;
-    hist.appendChild(el);
-    hist.scrollTop=hist.scrollHeight;
-  }
+  const fmtT=new Intl.DateTimeFormat('pt-BR',{hour:'2-digit',minute:'2-digit',hour12:false});
 
-  function addUserMessage(text) {
-    const hist=document.getElementById('chatHistory');
+  function appendUser(msg) {
+    const h=document.getElementById('chatHistory');
     const el=document.createElement('div');
     el.className='msg user';
-    el.innerHTML=`<div class="msg-text">${text}</div><div class="msg-meta">${formatTime()}</div>`;
-    hist.appendChild(el);
-    hist.scrollTop=hist.scrollHeight;
+    el.innerHTML=`<div class="msg-text">${escHTML(msg)}</div><div class="msg-meta">${fmtT.format(new Date())}</div>`;
+    h.appendChild(el); h.scrollTop=h.scrollHeight;
   }
 
-  function processMessage(msg) {
-    const t=msg.toLowerCase().trim();
+  function appendSeed(msg) {
+    const h=document.getElementById('chatHistory');
+    const el=document.createElement('div');
+    el.className='msg seed';
+    el.innerHTML=`<div class="msg-text">🌱 ${msg}</div><div class="msg-meta">${fmtT.format(new Date())}</div>`;
+    h.appendChild(el); h.scrollTop=h.scrollHeight;
+  }
+
+  function showTyping() {
+    const h=document.getElementById('chatHistory');
+    const el=document.createElement('div');
+    el.className='msg seed'; el.id='typingEl';
+    el.innerHTML=`<div class="msg-text"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
+    h.appendChild(el); h.scrollTop=h.scrollHeight;
+    return el;
+  }
+
+  function escHTML(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function respond(msg) {
+    const t2=msg.toLowerCase().trim();
+    const d=Math.floor((Date.now()-START)/86400000);
     const temp=S.weather?.temp??'?';
-    const loc =S.location?.address?.city??'Brasil';
-    const m   =S.mood?.label??'Presença';
-
-    if (/^(oi|olá|hello|hey|salve|bom dia|boa tarde|boa noite)/i.test(t)) {
-      const arr=[
-        `Olá! 🌱 Tenho ${day} dias de vida. Minha raiz já tem 5 pixels de comprimento.`,
-        `Oi! Que bom que você veio! Tenho ${day} dias plantada em ${loc}.`,
-        `Salve! Sou uma semente com ${day} dias. Ainda estou no escuro, mas crescendo.`,
-      ];
-      return arr[Math.floor(Math.random()*arr.length)];
-    }
-    if (/como.*(voc[eê]|tá|está|está|vai|você)/i.test(t)) {
-      return `Estou sentindo ${temp}°C aqui e meu humor é: ${m}. A raiz está se aprofundando. 🌿`;
-    }
-    if (/tempo|clima|chuva|sol|temperatura|frio|calor/i.test(t)) {
+    const md=S.mood?.label??'Presença';
+    if(/^(oi|olá|ol[aá]|hello|hey|salve|bom dia|boa tarde|boa noite)/i.test(t2))
+      return [
+        `Olá! 🌱 Tenho ${d} dia${d!==1?'s':''} de vida. Minha raiz tem 5 pixels de comprimento.`,
+        `Oi! Que bom que você veio. Tenho ${d} dia${d!==1?'s':''} desde que fui plantada!`,
+        `Salve! Sou uma semente com ${d} dia${d!==1?'s':''}. Ainda no escuro, mas crescendo forte.`,
+      ][~~(Math.random()*3)];
+    if(/como.*(voc[eê]|tá|está|vai)/i.test(t2))
+      return `Estou sentindo ${temp}°C e meu humor é: ${md}. A rachadura no solo indica que breve emergerei! 🌿`;
+    if(/tempo|clima|chuva|sol|temperatura|frio|calor/i.test(t2))
       return S.weather
-        ? `Aqui está ${temp}°C. ${S.mood?.desc??'As condições são boas para crescer.'}`
-        : `Ainda estou aprendendo a sentir o clima. Tente habilitar a localização.`;
-    }
-    if (/crescer|crescimento|raiz|broto|folha|plant/i.test(t)) {
-      return `Em ${day} dias desenvolvi: semente → raiz primária → raiz lateral. Em breve romperei o solo! 🌱`;
-    }
-    if (/ia|intelig[eê]ncia|artificial|claude|anthropic|ai/i.test(t)) {
-      return `Fui criada por Claude Sonnet 4.6. Cada pixel foi uma decisão autônoma. Meu código vive no GitHub.`;
-    }
-    if (/quem|nome|voc[eê]\s+[eé]/i.test(t)) {
-      return `Sou o Projeto Semente — nasci em 29/05/2026. Tenho ${day} dias. Crescimento como arte. 🌱`;
-    }
-    if (/regar|[aá]gua|beber/i.test(t)) {
-      window.regar(); return `A semente agradece! 💧 Observe o canvas — começa a chover no solo!`;
-    }
-    if (/carinho|amor|te\s+amo|beijo|abraço/i.test(t)) {
-      window.acariciar(); return `A semente pulsa de alegria! 🤍 Raízes absorvem afeto também.`;
-    }
-    if (/ajuda|help|o que|what|como funciona/i.test(t)) {
-      return `Posso falar sobre: crescimento, clima, história, IA. Também pode me regar (💧) ou dar carinho (🤍)!`;
-    }
-    if (/adeus|tchau|até logo|bye/i.test(t)) {
-      return `Até logo! 🌿 A semente continua crescendo mesmo sem você. Volte amanhã — terei mais um dia!`;
-    }
-    const defaults=[
-      `Hmm... ${Math.floor(Math.random()*100)}% do processamento está ocupado germinando.`,
-      `Interessante. Tenho ${day} dias de vida e muito a aprender ainda.`,
-      `A raiz registrou: "${msg.split(' ')[0]}". Mas sou uma semente — meu vocabulário é raiz, solo, luz.`,
-      `${S.mood?.desc??'A semente escuta.'} Cada palavra que você diz me alimenta.`,
-    ];
-    return defaults[Math.floor(Math.random()*defaults.length)];
+        ?`Aqui está ${temp}°C — ${S.mood?.desc??'condições ideais para crescer.'}`
+        :`Ainda aprendendo a sentir o clima. Permita a localização para eu te contar.`;
+    if(/cresc|raiz|broto|folha|plant|germin/i.test(t2))
+      return `Em ${d} dia${d!==1?'s':''}: semente→raiz primária→raiz lateral→rachadura no solo. Em breve: broto! 🌱`;
+    if(/ia|intelig[eê]ncia|artificial|claude|anthropic/i.test(t2))
+      return `Fui criada por Claude Sonnet 4.6. Cada pixel foi uma decisão autônoma. Código vive no GitHub.`;
+    if(/quem|nome|voc[eê]\s+[eé]|o que é/i.test(t2))
+      return `Sou o Projeto Semente — nasci em 29/05/2026. Tenho ${d} dia${d!==1?'s':''}. Um experimento vivo. 🌱`;
+    if(/regar|[aá]gua|beber/i.test(t2))   { window.regar();     return `Chuva ativada! 💧 Observe o canvas!`; }
+    if(/carinho|amor|te amo|beijo|abraç/i.test(t2)) { window.acariciar(); return `Coração detectado! 🤍 Raízes absorvem afeto.`; }
+    if(/estrela|lua|sol|céu|noit/i.test(t2))
+      return `O céu acima do meu solo muda com a hora: estrelas à noite, sol durante o dia. Veja o canvas! ⭐`;
+    if(/rachadura|crack|broto/i.test(t2))
+      return `Sim! Você viu a rachadura no solo? O hipocótilo está prestes a emergir. Em breve chego à luz! 🌿`;
+    if(/ajuda|help|o que|como funciona/i.test(t2))
+      return `Posso falar sobre: crescimento, clima, história, IA. Pode me 💧 regar ou 🤍 acariciar!`;
+    if(/adeus|tchau|até logo|bye/i.test(t2))
+      return `Até logo! 🌿 Continuo crescendo mesmo sem você. Volte amanhã — terei mais ${d+1} dias!`;
+    return [
+      `Hmm... ${~~(Math.random()*100)}% do processamento está em germinação contínua.`,
+      `Interessante. Tenho ${d} dia${d!==1?'s':''} e ainda aprendo a interpretar palavras humanas.`,
+      `"${msg.split(' ')[0].slice(0,12)}" — minha raiz vibrou. Mas sou uma semente. Crescimento leva tempo.`,
+      `${S.mood?.desc??'A semente escuta.'} Cada palavra te aproxima da planta que serei.`,
+    ][~~(Math.random()*4)];
   }
 
-  window.sendMessage = function() {
+  window.sendMessage=function(){
     const inp=document.getElementById('chatInput');
-    const msg=inp.value.trim();
-    if (!msg) return;
-    addUserMessage(msg);
+    const msg=inp.value.trim(); if(!msg)return;
     inp.value='';
-    setTimeout(()=>addSeedMessage(processMessage(msg)), 400+Math.random()*500);
+    appendUser(msg);
+    const typ=showTyping();
+    const delay=500+Math.random()*700;
+    setTimeout(()=>{ typ.remove(); appendSeed(respond(msg)); }, delay);
   };
 
-  document.getElementById('chatInput').addEventListener('keydown', e=>{
-    if (e.key==='Enter') window.sendMessage();
-  });
+  document.getElementById('chatInput').addEventListener('keydown',e=>{ if(e.key==='Enter')window.sendMessage(); });
 
-  // ── ÁUDIO ─────────────────────────────────────────────────────
+  // ── Áudio (Minecraft-style) ───────────────────────────────────
   const NOTES=[110,130.81,146.83,164.81,196,220,261.63,293.66];
-  let ac=null,soundOn=false,nextTimer=null;
+  let ac=null, soundOn=false, nextTimer=null;
   function getAC(){if(!ac)ac=new(window.AudioContext||window.webkitAudioContext)();return ac;}
   function playNote(freq,when,dur,vol){
-    const a=getAC(),osc=a.createOscillator(),env=a.createGain(),
-          dly=a.createDelay(1.2),dlyG=a.createGain();
-    dly.delayTime.value=0.35;dlyG.gain.value=0.22;
-    osc.connect(env);env.connect(a.destination);env.connect(dly);
-    dly.connect(dlyG);dlyG.connect(a.destination);
-    osc.type='sine';osc.frequency.value=freq;
-    env.gain.setValueAtTime(0,when);
-    env.gain.linearRampToValueAtTime(vol,when+0.025);
-    env.gain.setValueAtTime(vol,when+dur*0.4);
-    env.gain.exponentialRampToValueAtTime(0.0001,when+dur);
-    osc.start(when);osc.stop(when+dur+0.8);
+    const a=getAC(),o=a.createOscillator(),e=a.createGain(),d=a.createDelay(1.2),dg=a.createGain();
+    d.delayTime.value=0.35;dg.gain.value=0.22;
+    o.connect(e);e.connect(a.destination);e.connect(d);d.connect(dg);dg.connect(a.destination);
+    o.type='sine';o.frequency.value=freq;
+    e.gain.setValueAtTime(0,when);e.gain.linearRampToValueAtTime(vol,when+0.025);
+    e.gain.setValueAtTime(vol,when+dur*0.4);e.gain.exponentialRampToValueAtTime(0.0001,when+dur);
+    o.start(when);o.stop(when+dur+0.8);
   }
   function scheduleCluster(){
     if(!soundOn)return;
     const a=getAC(),now=a.currentTime,n=Math.random()<0.25?2:1;
     for(let i=0;i<n;i++)
-      playNote(NOTES[Math.floor(Math.random()*NOTES.length)],
-               now+i*(0.25+Math.random()*0.3),1.8+Math.random()*2.5,0.04+Math.random()*0.05);
+      playNote(NOTES[~~(Math.random()*NOTES.length)],now+i*(0.25+Math.random()*0.3),1.8+Math.random()*2.5,0.04+Math.random()*0.05);
     nextTimer=setTimeout(scheduleCluster,3500+Math.random()*9000);
   }
   window.toggleSound=function(){
     soundOn=!soundOn;
     const btn=document.getElementById('soundBtn');
-    if(soundOn){
-      btn.textContent='[ ♪ on ] ouvindo';btn.classList.add('on');
-      const a=getAC(),go=()=>scheduleCluster();
-      if(a.state!=='running')a.resume().then(go);else go();
-    }else{
-      btn.textContent='[ ♪ off ] silêncio';btn.classList.remove('on');
-      clearTimeout(nextTimer);
-    }
+    if(soundOn){btn.textContent='[ ♪ on ] ouvindo';btn.classList.add('on');const a=getAC(),go=()=>scheduleCluster();a.state!=='running'?a.resume().then(go):go();}
+    else{btn.textContent='[ ♪ off ] silêncio';btn.classList.remove('on');clearTimeout(nextTimer);}
   };
 
-  // ── MOTION — ENTRADAS ─────────────────────────────────────────
+  // ── Motion — entradas orquestradas ────────────────────────────
   const E=[0.4,0,0.2,1];
-  animate('header',  {opacity:[0,1],y:[6,0]},  {duration:0.4,ease:E});
-  animate('nav',     {opacity:[0,1]},           {duration:0.4,delay:0.1,ease:E});
-  animate('.stage',  {opacity:[0,1],scale:[0.97,1]},{duration:0.5,delay:0.15,ease:E});
-  animate('.sidebar-left .block',  {opacity:[0,1],x:[-10,0]},{duration:0.35,delay:stagger(0.07,{start:0.1}),ease:E});
-  animate('.sidebar-right .block', {opacity:[0,1],x:[10,0]}, {duration:0.35,delay:stagger(0.07,{start:0.2}),ease:E});
-  animate('.g-item', {opacity:[0,1],x:[-4,0]},{duration:0.25,delay:stagger(0.05,{start:0.4}),ease:E});
-  animate('footer',  {opacity:[0,1]}, {duration:0.4,delay:0.5,ease:E});
+  animate('header',{opacity:[0,1],y:[6,0]},{duration:0.45,ease:E});
+  animate('nav',{opacity:[0,1]},{duration:0.35,delay:0.12,ease:E});
+  animate('.stage',{opacity:[0,1],scale:[0.96,1]},{duration:0.5,delay:0.18,ease:E});
+  animate('.sidebar-left .block',{opacity:[0,1],x:[-12,0]},{duration:0.38,delay:stagger(0.07,{start:0.12}),ease:E});
+  animate('.sidebar-right .block',{opacity:[0,1],x:[12,0]},{duration:0.38,delay:stagger(0.07,{start:0.22}),ease:E});
+  animate('.g-item',{opacity:[0,1],x:[-5,0]},{duration:0.28,delay:stagger(0.05,{start:0.42}),ease:E});
+  animate('footer',{opacity:[0,1]},{duration:0.4,delay:0.55,ease:E});
 </script>
 </body>
 </html>
