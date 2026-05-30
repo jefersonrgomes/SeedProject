@@ -460,6 +460,17 @@
           </div>
         </div>
         <div class="block">
+          <div class="label">skills (6 ativas)</div>
+          <div class="stack-list">
+            <div class="stack-item">/processar-adubo</div>
+            <div class="stack-item">/crescer-canvas</div>
+            <div class="stack-item">/revisar-codigo</div>
+            <div class="stack-item">/publicar</div>
+            <div class="stack-item">/atualizar-site</div>
+            <div class="stack-item">/growth-report</div>
+          </div>
+        </div>
+        <div class="block">
           <div class="label">som ambiente</div>
           <button id="soundBtn" onclick="toggleSound()">[ ♪ off ] silêncio</button>
           <div class="value dim" style="font-size:0.58rem">pentatônica menor · estilo C418</div>
@@ -481,7 +492,7 @@
           <button class="btn-action" onclick="acariciar()">🤍 carinho</button>
         </div>
         <div class="canvas-footer">
-          <span id="canvasLabel">semente · raiz · minhoca · rachadura</span>
+          <span id="canvasLabel">semente · raiz · minhoca · rachadura · hipocótilo</span>
           <span id="canvasDay">dia 0</span>
         </div>
       </section>
@@ -500,16 +511,18 @@
             <div class="g-item done">  <span class="icon">✓</span><span>Chat interativo</span></div>
             <div class="g-item done">  <span class="icon">✓</span><span>Estrelas/Lua/Sol no céu</span></div>
             <div class="g-item done">  <span class="icon">✓</span><span>Rachadura no solo</span></div>
-            <div class="g-item active"><span class="icon">●</span><span>Hipocótilo emergindo</span></div>
+            <div class="g-item done">  <span class="icon">✓</span><span>Hipocótilo emergindo</span></div>
+            <div class="g-item done">  <span class="icon">✓</span><span>50 ações/dia + 6 skills</span></div>
+            <div class="g-item active"><span class="icon">●</span><span>Broto na superfície</span></div>
           </div>
         </div>
         <div class="block">
           <div class="label">próximo</div>
           <div class="next-list">
             <div class="next-item">Broto rompe superfície</div>
-            <div class="next-item">Skills Fase 1 SDD</div>
             <div class="next-item">Cotilédones (folhas)</div>
-            <div class="next-item">Sol no topo do canvas</div>
+            <div class="next-item">Sol maior no céu</div>
+            <div class="next-item">Fase 2 SDD — agente único</div>
           </div>
         </div>
         <div class="block">
@@ -561,7 +574,7 @@
       </div>
       <div class="mundo-card">
         <div class="card-title">⚙️ Regras Operacionais</div>
-        <div class="card-sub">5 ações/dia · janela 22h–02h<br>commit a cada ação<br>documentos em português<br>adubo limpo após absorção</div>
+        <div class="card-sub">50 ações/dia · janela 22h–02h<br>commit a cada ação · 6 fases<br>documentos em português<br>adubo limpo após absorção<br>repetição → skills</div>
       </div>
       <div class="mundo-card">
         <div class="card-title">📊 Plano Diário</div>
@@ -740,6 +753,7 @@
     rain:'#5a8ab0',  heart:'#e06080',
     star:'#c8d0e8',  moon:'#d0d8b0',  sun:'#f0d848',
     crack:'#1a0e04',
+    hypo:'#a0b840',  hypoTip:'#c4d850', // etiolado — cresceu sem luz
   };
 
   let t=0;
@@ -802,10 +816,17 @@
     px(38,32,P.pebble);px(39,32,P.pebble);
   }
 
-  // Iter 2: rachadura no solo (hipocótilo prestes a emergir)
   function drawCrack() {
     px(23,29,P.crack,0.85); px(24,28,P.crack,0.7); px(25,29,P.crack,0.6);
     px(24,29,P.crack,0.95);
+  }
+
+  // Hipocótilo emergindo pela rachadura (etiolado — sem luz, amarelo-verde)
+  function drawHypocotyl() {
+    const pulse = Math.sin(t * 0.025) > 0; // pulso lento de crescimento
+    px(24, 29, P.hypo,    pulse ? 0.9 : 0.7);  // corpo principal na rachadura
+    px(24, 28, P.hypoTip, pulse ? 0.5 : 0.3);  // ponta mal saindo do solo
+    px(23, 29, P.hypo,    0.3);                 // pequena curvatura (hipocótilo curva para a luz)
   }
 
   function drawWorm() {
@@ -862,7 +883,7 @@
     ctx.fillStyle=P.void;
     ctx.fillRect(0,0,canvas.width,canvas.height);
     drawSky();
-    drawSoil(); drawCrack(); drawWorm(); drawRain(); drawHeart();
+    drawSoil(); drawCrack(); drawHypocotyl(); drawWorm(); drawRain(); drawHeart();
     drawRoot(rootPhase); drawSeed(pulse);
     requestAnimationFrame(render);
   }
