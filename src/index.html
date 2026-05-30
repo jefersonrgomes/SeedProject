@@ -26,40 +26,48 @@
       letter-spacing: 0.1em;
       opacity: 0.5;
     }
+    #soundBtn {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      background: #111;
+      border: 1px solid #2a2a2a;
+      color: #555;
+      font-family: monospace;
+      font-size: 10px;
+      padding: 5px 9px;
+      cursor: pointer;
+      letter-spacing: 0.12em;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    #soundBtn:hover { color: #888; border-color: #444; }
+    #soundBtn.on   { color: #7a9; border-color: #3a5a3a; }
   </style>
 </head>
 <body>
   <canvas id="c"></canvas>
   <div id="info">dia 0 — germinação iniciada — primeiro adubo absorvido</div>
+  <button id="soundBtn" onclick="toggleSound()">[ ♪ off ]</button>
 
   <script>
-    const SCALE = 6;
-    const W = 48;
-    const H = 48;
-
+    // ── Canvas ────────────────────────────────────────────────
+    const SCALE = 6, W = 48, H = 48;
     const canvas = document.getElementById('c');
     canvas.width  = W * SCALE;
     canvas.height = H * SCALE;
     const ctx = canvas.getContext('2d');
     ctx.imageSmoothingEnabled = false;
 
-    // Paleta
     const P = {
       void:     '#0a0a0a',
-      soil1:    '#3b2312',
-      soil2:    '#4e2f17',
-      soil3:    '#2a1a0e',
-      seed:     '#c8a85a',
-      seedDark: '#8b6914',
-      root:     '#7a5c2e',
-      rootTip:  '#a07840',
+      soil1:    '#3b2312', soil2: '#4e2f17', soil3: '#2a1a0e',
+      seed:     '#c8a85a', seedDark: '#8b6914',
+      root:     '#7a5c2e', rootTip: '#a07840',
       glow:     '#d4b96a',
     };
 
-    // Estado da cena
     let tick = 0;
 
-    // Desenha pixel escalado
     function px(x, y, color, alpha) {
       if (alpha !== undefined) ctx.globalAlpha = alpha;
       ctx.fillStyle = color;
@@ -67,74 +75,113 @@
       if (alpha !== undefined) ctx.globalAlpha = 1;
     }
 
-    // Solo
     function drawSoil() {
-      for (let y = 28; y < H; y++) {
+      for (let y = 28; y < H; y++)
         for (let x = 0; x < W; x++) {
-          const noise = (x * 3 + y * 7) % 5;
-          if (noise < 2)      px(x, y, P.soil1);
-          else if (noise < 4) px(x, y, P.soil2);
-          else                px(x, y, P.soil3);
+          const n = (x * 3 + y * 7) % 5;
+          px(x, y, n < 2 ? P.soil1 : n < 4 ? P.soil2 : P.soil3);
         }
-      }
     }
 
-    // Fundo
-    function drawVoid() {
-      ctx.fillStyle = P.void;
-      ctx.fillRect(0, 0, canvas.width, 28 * SCALE);
-    }
-
-    // Semente com pulso e brilho leve (adubo absorvido)
     function drawSeed(pulse) {
-      const cx = Math.floor(W / 2);
-      const cy = 30;
-
-      // Brilho externo (semente ativada pelo adubo)
+      const cx = Math.floor(W / 2), cy = 30;
       if (pulse) {
-        px(cx - 2, cy,     P.glow, 0.15);
-        px(cx + 2, cy,     P.glow, 0.15);
-        px(cx,     cy - 1, P.glow, 0.15);
-        px(cx,     cy + 1, P.glow, 0.15);
+        px(cx-2, cy,   P.glow, 0.15); px(cx+2, cy,   P.glow, 0.15);
+        px(cx,   cy-1, P.glow, 0.15); px(cx,   cy+1, P.glow, 0.15);
       }
-
-      // Corpo da semente — 3×2 pixels
-      const color = pulse ? P.seed : P.seedDark;
-      px(cx - 1, cy,     color);
-      px(cx,     cy,     color);
-      px(cx + 1, cy,     color);
-      px(cx - 1, cy + 1, P.seedDark);
-      px(cx,     cy + 1, color);
-      px(cx + 1, cy + 1, P.seedDark);
+      const c = pulse ? P.seed : P.seedDark;
+      px(cx-1, cy, c); px(cx, cy, c); px(cx+1, cy, c);
+      px(cx-1, cy+1, P.seedDark); px(cx, cy+1, c); px(cx+1, cy+1, P.seedDark);
     }
 
-    // Raiz primária (começa a crescer após primeiro adubo)
-    function drawRoot(rootPhase) {
+    function drawRoot(phase) {
       const cx = Math.floor(W / 2);
-
-      // Raiz principal desce 2 pixels
       px(cx, 32, P.root);
-      if (rootPhase >= 1) {
-        px(cx, 33, P.rootTip);
-      }
+      if (phase >= 1) px(cx, 33, P.rootTip);
     }
 
     function render() {
       tick++;
-
       const pulse = Math.floor(tick / 45) % 2 === 0;
-      // Raiz cresce gradualmente após 120 frames
-      const rootPhase = tick > 120 ? 1 : 0;
-
-      drawVoid();
+      ctx.fillStyle = P.void;
+      ctx.fillRect(0, 0, canvas.width, 28 * SCALE);
       drawSoil();
-      drawRoot(rootPhase);
+      drawRoot(tick > 120 ? 1 : 0);
       drawSeed(pulse);
-
       requestAnimationFrame(render);
     }
 
     render();
+
+    // ── Áudio estilo Minecraft (Web Audio API) ────────────────
+    // Escala pentatônica menor — tom de caverna, estilo C418
+    const NOTES = [110.00, 130.81, 146.83, 164.81, 196.00, 220.00, 261.63, 293.66];
+
+    let ac = null, soundOn = false, nextTimer = null;
+
+    function getAC() {
+      if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
+      return ac;
+    }
+
+    function playNote(freq, when, dur, vol = 0.07) {
+      const ctx2 = getAC();
+      const osc  = ctx2.createOscillator();
+      const env  = ctx2.createGain();
+      const dly  = ctx2.createDelay(1.2);
+      const dlyG = ctx2.createGain();
+
+      dly.delayTime.value = 0.35;
+      dlyG.gain.value     = 0.22;
+
+      osc.connect(env);
+      env.connect(ctx2.destination);
+      env.connect(dly);
+      dly.connect(dlyG);
+      dlyG.connect(ctx2.destination);
+
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+
+      env.gain.setValueAtTime(0, when);
+      env.gain.linearRampToValueAtTime(vol, when + 0.025);
+      env.gain.setValueAtTime(vol, when + dur * 0.4);
+      env.gain.exponentialRampToValueAtTime(0.0001, when + dur);
+
+      osc.start(when);
+      osc.stop(when + dur + 0.8);
+    }
+
+    function scheduleCluster() {
+      if (!soundOn) return;
+      const ctx2 = getAC();
+      const now  = ctx2.currentTime;
+      const count = Math.random() < 0.25 ? 2 : 1;
+
+      for (let i = 0; i < count; i++) {
+        const freq = NOTES[Math.floor(Math.random() * NOTES.length)];
+        const off  = i * (0.25 + Math.random() * 0.35);
+        const dur  = 1.8 + Math.random() * 2.5;
+        playNote(freq, now + off, dur, 0.04 + Math.random() * 0.05);
+      }
+
+      nextTimer = setTimeout(scheduleCluster, 3500 + Math.random() * 9000);
+    }
+
+    function toggleSound() {
+      soundOn = !soundOn;
+      const btn = document.getElementById('soundBtn');
+      if (soundOn) {
+        btn.textContent = '[ ♪ on ]';
+        btn.classList.add('on');
+        if (ac && ac.state === 'suspended') ac.resume();
+        scheduleCluster();
+      } else {
+        btn.textContent = '[ ♪ off ]';
+        btn.classList.remove('on');
+        clearTimeout(nextTimer);
+      }
+    }
   </script>
 </body>
 </html>
