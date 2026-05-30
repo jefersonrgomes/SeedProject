@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seed Project</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: monospace;
+      color: #444;
+    }
+    canvas {
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+    #info {
+      margin-top: 16px;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      opacity: 0.5;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="c"></canvas>
+  <div id="info">day 0 — the seed is planted — 2026-05-29</div>
+
+  <script>
+    const SCALE = 6;
+    const W = 48;
+    const H = 48;
+
+    const canvas = document.getElementById('c');
+    canvas.width  = W * SCALE;
+    canvas.height = H * SCALE;
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+
+    // Palette
+    const P = {
+      void:  '#0a0a0a',
+      soil1: '#3b2312',
+      soil2: '#4e2f17',
+      soil3: '#2a1a0e',
+      seed:  '#c8a85a',
+      seedDark: '#8b6914',
+    };
+
+    // Scene state
+    let tick = 0;
+
+    // Draw a pixel block (scaled)
+    function px(x, y, color) {
+      ctx.fillStyle = color;
+      ctx.fillRect(x * SCALE, y * SCALE, SCALE, SCALE);
+    }
+
+    // Draw soil layer
+    function drawSoil() {
+      for (let y = 28; y < H; y++) {
+        for (let x = 0; x < W; x++) {
+          const noise = (x * 3 + y * 7) % 5;
+          if (noise < 2)      px(x, y, P.soil1);
+          else if (noise < 4) px(x, y, P.soil2);
+          else                px(x, y, P.soil3);
+        }
+      }
+    }
+
+    // Draw background (sky/void)
+    function drawVoid() {
+      ctx.fillStyle = P.void;
+      ctx.fillRect(0, 0, canvas.width, (H - 20) * SCALE);
+    }
+
+    // Draw the seed (centered at soil surface)
+    function drawSeed(pulse) {
+      const cx = Math.floor(W / 2);
+      const cy = 30; // just below soil surface
+
+      // Seed body — 3x2 pixels
+      const color = pulse ? P.seed : P.seedDark;
+      px(cx - 1, cy,     color);
+      px(cx,     cy,     color);
+      px(cx + 1, cy,     color);
+      px(cx - 1, cy + 1, P.seedDark);
+      px(cx,     cy + 1, color);
+      px(cx + 1, cy + 1, P.seedDark);
+    }
+
+    function render() {
+      tick++;
+
+      // Slow pulse every ~90 frames
+      const pulse = Math.floor(tick / 45) % 2 === 0;
+
+      drawVoid();
+      drawSoil();
+      drawSeed(pulse);
+
+      requestAnimationFrame(render);
+    }
+
+    render();
+  </script>
+</body>
+</html>
