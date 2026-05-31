@@ -112,7 +112,10 @@
     nav {
       display: flex; gap: 0; padding: 0.8rem 0 0;
       border-bottom: 1px solid var(--border);
-      position: relative;
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(14,22,14,0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       opacity: 0;
     }
     .tab {
@@ -125,18 +128,59 @@
     .tab:hover  { color: var(--text); background: rgba(255,255,255,0.02); }
     .tab.active { color: var(--accent-hi); border-bottom-color: var(--accent); }
 
-    /* ── Views ───────────────────────────────────────────────── */
-    .view { display: none; animation: viewIn 0.3s var(--ease) both; }
-    .view.active { display: block; }
-    @keyframes viewIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+    /* ── Views — scroll contínuo ─────────────────────────────── */
+    .view { display: block; }
+    .view:not(#v-semente) {
+      padding: 4rem 0 3rem;
+      border-top: 1px solid var(--border-d);
+      scroll-margin-top: 48px;
+    }
+    .section-title {
+      font-size: 0.58rem; font-weight: 700; letter-spacing: 0.3em;
+      text-transform: uppercase; color: var(--text-dim);
+      margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.8rem;
+    }
+    .section-title::after { content:''; flex:1; height:1px; background:var(--border-d); }
+    @keyframes viewIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
 
-    /* ── Semente layout ──────────────────────────────────────── */
+    /* ── Hero: primeira sessão ocupa viewport completo ──────── */
+    #v-semente {
+      min-height: 100svh;
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      padding: 1.5rem 0 2.5rem; position: relative;
+    }
+    .scroll-hint {
+      position: absolute; bottom: 1.2rem; left: 50%;
+      transform: translateX(-50%);
+      color: var(--text-dim); font-size: 0.58rem; letter-spacing: 0.18em;
+      display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
+      animation: float 2.2s ease-in-out infinite;
+      user-select: none; pointer-events: none;
+    }
+
+    /* ── Semente layout (hero reflow) ────────────────────────── */
     .canvas-layout {
       display: grid;
       grid-template-columns: 220px 1fr 240px;
       gap: 2rem; align-items: center;
       padding: 2rem 0;
     }
+    #v-semente .canvas-layout {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 1.2rem;
+      width: 100%;
+    }
+    #v-semente .stage { order: -1; }
+    #v-semente .canvas-wrap canvas {
+      width: clamp(288px, min(84vw, 64vh), 520px);
+      height: auto;
+    }
+    #v-semente .sidebar {
+      display: flex; flex-direction: row; flex-wrap: wrap;
+      justify-content: center; gap: 1rem; max-width: 940px;
+    }
+    #v-semente .block { min-width: 155px; max-width: 208px; flex: 1; }
     .sidebar { display: flex; flex-direction: column; gap: 1.4rem; }
     .block   { display: flex; flex-direction: column; gap: 0.4rem; opacity: 0; }
     .label {
@@ -522,7 +566,7 @@
     </div>
   </header>
 
-  <nav>
+  <nav id="mainNav">
     <button class="tab active" data-view="semente">🌱 Semente</button>
     <button class="tab" data-view="mundo">🌍 Mundo</button>
     <button class="tab" data-view="chat">💬 Conversar</button>
@@ -530,8 +574,8 @@
     <div id="tabSlider"></div>
   </nav>
 
-  <!-- ── TAB: SEMENTE ────────────────────────────────────────── -->
-  <div class="view active" id="v-semente">
+  <!-- ── HERO: SEMENTE ────────────────────────────────────────── -->
+  <div class="view" id="v-semente">
     <div class="canvas-layout">
 
       <aside class="sidebar sidebar-left">
@@ -547,10 +591,10 @@
         <div class="block">
           <div class="label">fase</div>
           <div class="phase-row"><div class="dot"></div><span class="value">Fase 0 — Germinação</span></div>
-          <div class="progress-bar" title="Progresso até caule e folhas">
-            <div class="progress-fill" id="stageFill" style="width:65%"></div>
+          <div class="progress-bar" title="Progresso até floração">
+            <div class="progress-fill" id="stageFill" style="width:82%"></div>
           </div>
-          <div class="value dim" style="font-size:0.58rem">65% → caule maior + vento</div>
+          <div class="value dim" style="font-size:0.58rem">82% → flores e fruto</div>
         </div>
         <div class="block">
           <div class="label">humor</div>
@@ -604,8 +648,8 @@
         <div class="canvas-stats">
           <div class="stat">📅 dia <span class="sv" id="statDay">0</span></div>
           <div class="stat">⎇ commits <span class="sv" id="statCommits">20</span></div>
-          <div class="stat">🌿 folhas <span class="sv">2 pares</span></div>
-          <div class="stat">🌱 próximo <span class="sv">caule+vento</span></div>
+          <div class="stat">🌿 caule <span class="sv">6px</span></div>
+          <div class="stat">🌱 próximo <span class="sv">floração</span></div>
           <div class="stat">👁 visitas <span class="sv" id="statVisits">1</span></div>
         </div>
         <div class="canvas-actions">
@@ -642,16 +686,19 @@
             <div class="g-item done">  <span class="icon">✓</span><span>Som on por padrão + sfx</span></div>
             <div class="g-item done">  <span class="icon">✓</span><span>Tema roxo + cores dinâmicas</span></div>
             <div class="g-item done">  <span class="icon">✓</span><span>Primeiras folhas verdadeiras</span></div>
-            <div class="g-item active"><span class="icon">●</span><span>Caule maior + vento animado</span></div>
+            <div class="g-item done">  <span class="icon">✓</span><span>Caule maior + vento animado</span></div>
+            <div class="g-item done">  <span class="icon">✓</span><span>Abelha voando no canvas</span></div>
+            <div class="g-item done">  <span class="icon">✓</span><span>Layout hero + scroll</span></div>
+            <div class="g-item active"><span class="icon">●</span><span>Canvas hero fullscreen</span></div>
           </div>
         </div>
         <div class="block">
           <div class="label">próximo</div>
           <div class="next-list">
-            <div class="next-item">Caule maior + vento animado</div>
-            <div class="next-item">Abelha passando no canvas</div>
-            <div class="next-item">Canvas hero fullscreen</div>
+            <div class="next-item">Floração — botão e pétalas</div>
+            <div class="next-item">Fruto — pixel art 3D</div>
             <div class="next-item">Fase 2 SDD — agente único</div>
+            <div class="next-item">Canvas hero expandido</div>
           </div>
         </div>
         <div class="block">
@@ -668,10 +715,12 @@
       </aside>
 
     </div>
+    <div class="scroll-hint" id="scrollHint" style="transition:opacity 0.4s">descobrir mais ↓</div>
   </div>
 
-  <!-- ── TAB: MUNDO ──────────────────────────────────────────── -->
+  <!-- ── SEÇÃO: MUNDO ──────────────────────────────────────────── -->
   <div class="view" id="v-mundo">
+    <div class="section-title">🌍 mundo</div>
     <div class="mundo-grid">
       <div class="mundo-card" id="card-loc">
         <div class="card-title">📍 Localização</div>
@@ -713,7 +762,9 @@
   </div>
 
   <!-- ── TAB: CHAT ───────────────────────────────────────────── -->
+  <!-- ── SEÇÃO: CHAT ───────────────────────────────────────────── -->
   <div class="view" id="v-chat">
+    <div class="section-title">💬 conversar</div>
     <div class="chat-layout">
       <div class="chat-header">💬 Conversar com a Semente — ela ouve, ela responde</div>
       <div class="chat-history" id="chatHistory"></div>
@@ -727,10 +778,11 @@
     </div>
   </div>
 
-  <!-- ── TAB: EVOLUÇÃO ──────────────────────────────────────── -->
+  <!-- ── SEÇÃO: EVOLUÇÃO ───────────────────────────────────────── -->
   <div class="view" id="v-historia">
+    <div class="section-title">🌿 evolução</div>
     <div class="historia-layout">
-      <div class="historia-title">🌿 linha do tempo · da semente ao cotilédone</div>
+      <div class="historia-title">linha do tempo · da semente às folhas</div>
       <div class="frames-row" id="framesRow"></div>
       <div class="replay-section">
         <button class="btn-replay" id="replayBtnFull" onclick="replayEvolution()">
@@ -928,8 +980,8 @@
   };
 
   // CANVAS_STAGE — atualizado a cada /crescer-canvas
-  // 0=semente 1=germinando 2=emergindo 3=broto 4=cotilédones 5=folhas...
-  const CANVAS_STAGE = 5;
+  // 0=semente 1=germinando 2=emergindo 3=broto 4=cotilédones 5=folhas 6=caule+vento
+  const CANVAS_STAGE = 6;
 
   let t=0;
 
@@ -1042,23 +1094,45 @@
     }
 
     if (stage >= 5) {
-      // Caule alongado (cresce acima dos cotilédones)
-      const fw = 0.65 + Math.sin(t * 0.022) * 0.10; // vento mais suave
-      px(cx, 23, P.stem, fw * 0.95);
-      px(cx, 22, P.stem, fw * 0.88);
-      px(cx, 21, P.stem, fw * 0.78);
-      // Primeiro par de folhas verdadeiras (y=20-21, mais estreitas e pontiagudas)
-      px(cx-1, 21, P.trueLeaf,   fw * 0.92);
-      px(cx-2, 21, P.trueLeaf,   fw * 0.75);
-      px(cx-2, 20, P.trueLeaf,   fw * 0.50);
-      px(cx-1, 20, P.trueLeafHi, fw * 0.60);
-      px(cx+1, 21, P.trueLeaf,   fw * 0.92);
-      px(cx+2, 21, P.trueLeaf,   fw * 0.75);
-      px(cx+2, 20, P.trueLeaf,   fw * 0.50);
-      px(cx+1, 20, P.trueLeafHi, fw * 0.60);
-      // Meristema apical (ponto de crescimento no topo)
-      px(cx, 20, P.sprout, fw * 0.72);
-      px(cx, 19, P.sprout, fw * 0.38);
+      const fw = 0.65 + Math.sin(t * 0.022) * 0.10;
+      // wind offset: sway cresce com a altura acima do solo (só no stage 6+)
+      const wo = (y) => stage >= 6 ? Math.round(Math.sin(t*0.022 + y*0.15) * (26-y) * 0.055) : 0;
+      px(cx+wo(23), 23, P.stem, fw * 0.95);
+      px(cx+wo(22), 22, P.stem, fw * 0.88);
+      px(cx+wo(21), 21, P.stem, fw * 0.78);
+      // Primeiro par de folhas verdadeiras
+      px(cx-1+wo(21), 21, P.trueLeaf,   fw * 0.92);
+      px(cx-2+wo(21), 21, P.trueLeaf,   fw * 0.75);
+      px(cx-2+wo(20), 20, P.trueLeaf,   fw * 0.50);
+      px(cx-1+wo(20), 20, P.trueLeafHi, fw * 0.60);
+      px(cx+1+wo(21), 21, P.trueLeaf,   fw * 0.92);
+      px(cx+2+wo(21), 21, P.trueLeaf,   fw * 0.75);
+      px(cx+2+wo(20), 20, P.trueLeaf,   fw * 0.50);
+      px(cx+1+wo(20), 20, P.trueLeafHi, fw * 0.60);
+      // Meristema apical
+      px(cx+wo(20), 20, P.sprout, fw * 0.72);
+      px(cx+wo(19), 19, P.sprout, fw * 0.38);
+    }
+
+    if (stage >= 6) {
+      // Caule maior — cresce acima das primeiras folhas
+      const w6 = 0.62 + Math.sin(t * 0.022) * 0.12;
+      const wo6 = (y) => Math.round(Math.sin(t*0.022 + y*0.15) * (26-y) * 0.06);
+      px(cx+wo6(19), 19, P.stem, w6 * 0.96); // conecta ao meristema
+      px(cx+wo6(18), 18, P.stem, w6 * 0.90);
+      px(cx+wo6(17), 17, P.stem, w6 * 0.82);
+      px(cx+wo6(16), 16, P.stem, w6 * 0.72);
+      px(cx+wo6(15), 15, P.stem, w6 * 0.60);
+      // Segundo par de folhas verdadeiras (y=16-17, nível intermediário)
+      px(cx-1+wo6(17), 17, P.trueLeaf,   w6 * 0.88);
+      px(cx-2+wo6(17), 17, P.trueLeaf,   w6 * 0.68);
+      px(cx-2+wo6(16), 16, P.trueLeaf,   w6 * 0.44);
+      px(cx+1+wo6(17), 17, P.trueLeaf,   w6 * 0.88);
+      px(cx+2+wo6(17), 17, P.trueLeaf,   w6 * 0.68);
+      px(cx+2+wo6(16), 16, P.trueLeaf,   w6 * 0.44);
+      // Meristema no topo (crescendo)
+      px(cx+wo6(14), 14, P.sprout, w6 * 0.62);
+      px(cx+wo6(13), 13, P.sprout, w6 * 0.30);
     }
   }
 
@@ -1099,6 +1173,25 @@
     });
   }
 
+  function drawBee() {
+    const h = new Date().getHours();
+    if (h < 8 || h >= 20) return;
+    if (S.weather && S.weather.code >= 51) return; // sem abelha na chuva
+    const period = 420; // t por travessia
+    const cycle = Math.floor(t / period) % 2;
+    const phase = (t % period) / period;
+    const goRight = cycle === 0;
+    const bx = Math.floor(2 + (goRight ? phase : 1 - phase) * (W - 8));
+    const by = 9 + Math.round(Math.sin(t * 0.09) * 1.5);
+    const wing = 0.32 + Math.abs(Math.sin(t * 0.45)) * 0.38; // bate asa
+    // Corpo: amarelo · listra preta · abdômen
+    px(bx,   by, '#e8c010', 0.94);
+    px(bx+1, by, '#181806', 0.92);
+    px(bx+2, by, '#e8c010', 0.78);
+    // Asa (lado frontal)
+    px(goRight ? bx : bx+2, by-1, '#c8e8f8', wing);
+  }
+
   function drawHeart() {
     if(S.heartPulse<=0)return;
     const cx=24,cy=22,a=S.heartPulse;
@@ -1117,7 +1210,7 @@
     ctx.fillRect(0,0,canvas.width,canvas.height);
     drawSky();
     const effectiveStage = S.replaying ? S.replayStage : CANVAS_STAGE;
-    drawSoil(); drawSprout(effectiveStage); drawWorm(); drawRain(); drawHeart();
+    drawSoil(); drawSprout(effectiveStage); drawWorm(); drawBee(); drawRain(); drawHeart();
     drawRoot(rootPhase); drawSeed(pulse);
     requestAnimationFrame(render);
   }
@@ -1164,32 +1257,41 @@
   }
 
   function switchToSemente(){
-    const sTab=document.querySelector('[data-view="semente"]');
-    if(sTab.classList.contains('active'))return;
-    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-    sTab.classList.add('active');
-    moveSlider(sTab);
-    document.getElementById('v-semente').classList.add('active');
+    document.getElementById('v-semente').scrollIntoView({behavior:'smooth',block:'start'});
   }
 
-  // ── Navegação com Motion ──────────────────────────────────────
+  // ── Navegação scroll-based ────────────────────────────────────
   document.querySelectorAll('.tab').forEach(tab=>{
     tab.addEventListener('click', ()=>{
       sfxClick();
-      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-      document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-      tab.classList.add('active');
-      moveSlider(tab);
       const view=document.getElementById('v-'+tab.dataset.view);
-      view.classList.add('active');
-      if(tab.dataset.view==='mundo') {
-        animate('.mundo-card',{opacity:[0,1],y:[10,0]},{duration:0.35,delay:stagger(0.06),ease:[0.4,0,0.2,1]});
-      }
+      view.scrollIntoView({behavior:'smooth',block:'start'});
       if(tab.dataset.view==='chat')    initChat();
       if(tab.dataset.view==='historia') initHistoria();
     });
   });
+
+  // IntersectionObserver: atualiza tab ativa conforme seção visível
+  const viewObs=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(!e.isIntersecting)return;
+      const vid=e.target.id.replace('v-','');
+      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+      const at=document.querySelector(`.tab[data-view="${vid}"]`);
+      if(at){at.classList.add('active');moveSlider(at);}
+      if(vid==='mundo') animate('.mundo-card',{opacity:[0,1],y:[10,0]},{duration:0.35,delay:stagger(0.06),ease:[0.4,0,0.2,1]});
+      if(vid==='chat')    initChat();
+      if(vid==='historia') initHistoria();
+    });
+  },{threshold:0.25});
+  document.querySelectorAll('.view').forEach(v=>viewObs.observe(v));
+
+  // Oculta scroll hint quando usuário rola
+  window.addEventListener('scroll',()=>{
+    const sh=document.getElementById('scrollHint');
+    if(sh) sh.style.opacity=window.scrollY>80?'0':'1';
+  },{passive:true});
+
   // Inicializa slider na tab ativa
   moveSlider(document.querySelector('.tab.active'));
 
@@ -1315,6 +1417,8 @@
     if(tstage>=4){const cm=tstage>=5?0.45:1;p(cx,25,P.stem,0.92*cm);p(cx,24,P.stem,0.85*cm);p(cx-1,25,P.leaf,0.95*cm);p(cx-2,25,P.leaf,0.80*cm);p(cx-2,24,P.leaf,0.65*cm);p(cx-3,24,P.leaf,0.40*cm);p(cx+1,25,P.leaf,0.95*cm);p(cx+2,25,P.leaf,0.80*cm);p(cx+2,24,P.leaf,0.65*cm);p(cx+3,24,P.leaf,0.40*cm);p(cx,23,P.sprout,0.50*cm);}
     // Folhas verdadeiras
     if(tstage>=5){p(cx,23,P.stem,0.95);p(cx,22,P.stem,0.88);p(cx,21,P.stem,0.78);p(cx-1,21,P.trueLeaf,0.92);p(cx-2,21,P.trueLeaf,0.75);p(cx-2,20,P.trueLeaf,0.50);p(cx-1,20,P.trueLeafHi,0.60);p(cx+1,21,P.trueLeaf,0.92);p(cx+2,21,P.trueLeaf,0.75);p(cx+2,20,P.trueLeaf,0.50);p(cx+1,20,P.trueLeafHi,0.60);p(cx,20,P.sprout,0.72);p(cx,19,P.sprout,0.38);}
+    // Caule maior + 2º par de folhas
+    if(tstage>=6){p(cx,19,P.stem,0.96);p(cx,18,P.stem,0.90);p(cx,17,P.stem,0.82);p(cx,16,P.stem,0.72);p(cx,15,P.stem,0.60);p(cx-1,17,P.trueLeaf,0.88);p(cx-2,17,P.trueLeaf,0.68);p(cx-2,16,P.trueLeaf,0.44);p(cx+1,17,P.trueLeaf,0.88);p(cx+2,17,P.trueLeaf,0.68);p(cx+2,16,P.trueLeaf,0.44);p(cx,14,P.sprout,0.62);p(cx,13,P.sprout,0.30);}
     // Semente (sempre)
     p(cx-1,30,P.seed);p(cx,30,P.seed);p(cx+1,30,P.seed);
     p(cx-1,31,P.seedDark);p(cx,31,P.seed);p(cx+1,31,P.seedDark);
@@ -1327,7 +1431,8 @@
     { stage:2, label:'dia 1',  date:'30 mai 2026', desc:'rachadura · hipocótilo' },
     { stage:3, label:'dia 1+', date:'30 mai 2026', desc:'broto na superfície' },
     { stage:4, label:'dia 2',  date:'31 mai 2026', desc:'cotilédones abertos' },
-    { stage:5, label:'hoje',   date:'31 mai 2026', desc:'folhas verdadeiras' },
+    { stage:5, label:'dia 2+', date:'31 mai 2026', desc:'folhas verdadeiras' },
+    { stage:6, label:'hoje',   date:'31 mai 2026', desc:'caule · vento · abelha' },
   ];
 
   function initHistoria() {
@@ -1365,7 +1470,7 @@
     const btnF=document.getElementById('replayBtnFull');
     [btn,btnF].forEach(b=>{if(b)b.disabled=true;});
     S.replaying=true;
-    const stages=[0,1,2,3,4,5];
+    const stages=[0,1,2,3,4,5,6];
     stages.forEach((stage,i)=>{
       setTimeout(()=>{
         S.replayStage=stage;
