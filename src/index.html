@@ -149,6 +149,8 @@
       display: flex; flex-direction: column;
       justify-content: center; align-items: center;
       padding: 1.5rem 0 2.5rem; position: relative;
+      /* Glow radial centrado no canvas */
+      background: radial-gradient(ellipse 70% 55% at 50% 42%, var(--glow-g), transparent 68%);
     }
     .scroll-hint {
       position: absolute; bottom: 1.2rem; left: 50%;
@@ -172,15 +174,32 @@
       width: 100%;
     }
     #v-semente .stage { order: -1; }
-    #v-semente .canvas-wrap canvas {
-      width: clamp(288px, min(84vw, 64vh), 520px);
-      height: auto;
+    #v-semente .canvas-wrap {
+      animation: none; /* sem float no hero — é grande demais */
+      box-shadow: 0 0 0 1px var(--border),
+                  0 0 80px var(--glow-g),
+                  0 0 160px rgba(0,0,0,0.3),
+                  0 16px 60px rgba(0,0,0,0.5);
+    }
+    #v-semente .canvas-wrap:hover {
+      box-shadow: 0 0 0 1px var(--accent-lo),
+                  0 0 120px var(--glow-g),
+                  0 0 200px rgba(0,0,0,0.2),
+                  0 20px 80px rgba(0,0,0,0.6);
+    }
+    #v-semente canvas {
+      width: clamp(300px, min(82vw, 70vh), 580px);
+      height: clamp(300px, min(82vw, 70vh), 580px);
+      display: block;
     }
     #v-semente .sidebar {
       display: flex; flex-direction: row; flex-wrap: wrap;
-      justify-content: center; gap: 1rem; max-width: 940px;
+      justify-content: center; gap: 1rem; max-width: 960px;
     }
-    #v-semente .block { min-width: 155px; max-width: 208px; flex: 1; }
+    #v-semente .block { min-width: 155px; max-width: 210px; flex: 1; }
+    /* Esconde blocos secundários no hero — stack e skills ficam na página completa */
+    #v-semente .sidebar-left .block:nth-child(n+4),
+    #v-semente .sidebar-right .block:nth-child(n+3) { display: none; }
     .sidebar { display: flex; flex-direction: column; gap: 1.4rem; }
     .block   { display: flex; flex-direction: column; gap: 0.4rem; opacity: 0; }
     .label {
@@ -265,7 +284,7 @@
     .mood-desc  { color: var(--text-dim); font-size: 0.6rem; margin-top: 0.1rem; }
 
     /* ── Canvas ──────────────────────────────────────────────── */
-    .stage { display: flex; flex-direction: column; align-items: center; gap: 1rem; opacity: 0; }
+    .stage { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
 
     /* Float animation — web-design-guidelines: "movimento com propósito" */
     .canvas-wrap {
