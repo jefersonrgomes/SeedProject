@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+  <style id="dynBg"></style>
   <style>
     /* ── Design system — skills aplicados ─────────────────────
        frontend-design (Anthropic): paleta comprometida, pesos extremos
@@ -546,10 +547,10 @@
         <div class="block">
           <div class="label">fase</div>
           <div class="phase-row"><div class="dot"></div><span class="value">Fase 0 — Germinação</span></div>
-          <div class="progress-bar" title="Progresso até primeiras folhas verdadeiras">
-            <div class="progress-fill" id="stageFill" style="width:42%"></div>
+          <div class="progress-bar" title="Progresso até caule e folhas">
+            <div class="progress-fill" id="stageFill" style="width:65%"></div>
           </div>
-          <div class="value dim" style="font-size:0.58rem">42% → primeiras folhas</div>
+          <div class="value dim" style="font-size:0.58rem">65% → caule maior + vento</div>
         </div>
         <div class="block">
           <div class="label">humor</div>
@@ -603,8 +604,8 @@
         <div class="canvas-stats">
           <div class="stat">📅 dia <span class="sv" id="statDay">0</span></div>
           <div class="stat">⎇ commits <span class="sv" id="statCommits">20</span></div>
-          <div class="stat">🌿 caule <span class="sv">2px</span></div>
-          <div class="stat">🌱 próximo <span class="sv">folhas</span></div>
+          <div class="stat">🌿 folhas <span class="sv">2 pares</span></div>
+          <div class="stat">🌱 próximo <span class="sv">caule+vento</span></div>
           <div class="stat">👁 visitas <span class="sv" id="statVisits">1</span></div>
         </div>
         <div class="canvas-actions">
@@ -614,7 +615,7 @@
           <button class="btn-action" id="shareBtn" onclick="shareState()">🔗 link</button>
         </div>
         <div class="canvas-footer">
-          <span id="canvasLabel">semente · raiz · broto · cotilédones · caule · céu</span>
+          <span id="canvasLabel">semente · raiz · broto · cotilédones · folhas · caule</span>
           <span id="canvasDay">dia 0</span>
         </div>
       </section>
@@ -638,15 +639,18 @@
             <div class="g-item done">  <span class="icon">✓</span><span>Broto verde na superfície</span></div>
             <div class="g-item done">  <span class="icon">✓</span><span>Cotilédones abertos</span></div>
             <div class="g-item done">  <span class="icon">✓</span><span>Mood-driven theme</span></div>
-            <div class="g-item active"><span class="icon">●</span><span>Primeiras folhas verdadeiras</span></div>
+            <div class="g-item done">  <span class="icon">✓</span><span>Som on por padrão + sfx</span></div>
+            <div class="g-item done">  <span class="icon">✓</span><span>Tema roxo + cores dinâmicas</span></div>
+            <div class="g-item done">  <span class="icon">✓</span><span>Primeiras folhas verdadeiras</span></div>
+            <div class="g-item active"><span class="icon">●</span><span>Caule maior + vento animado</span></div>
           </div>
         </div>
         <div class="block">
           <div class="label">próximo</div>
           <div class="next-list">
-            <div class="next-item">Primeiras folhas verdadeiras</div>
             <div class="next-item">Caule maior + vento animado</div>
-            <div class="next-item">Abelha passando</div>
+            <div class="next-item">Abelha passando no canvas</div>
+            <div class="next-item">Canvas hero fullscreen</div>
             <div class="next-item">Fase 2 SDD — agente único</div>
           </div>
         </div>
@@ -855,7 +859,9 @@
     document.getElementById('moodDesc').textContent     = m.desc;
     document.getElementById('w-mood-label').textContent = `${m.emoji} ${m.label}`;
     document.getElementById('w-mood-desc').textContent  = m.desc;
-    // Aplica tema de cor baseado no humor
+    // Atualiza tema dinâmico com dados de clima recém chegados
+    updateDynTheme();
+    // Sobrescreve accent-hi e gold com valor específico do humor
     const theme = MOOD_THEMES[m.label];
     if (theme) {
       document.documentElement.style.setProperty('--accent-hi', theme.hi);
@@ -918,11 +924,12 @@
     crack:'#1a0e04',
     hypo:'#a0b840',   hypoTip:'#c4d850', // etiolado — cresceu sem luz
     sprout:'#68a030', leaf:'#4a9020', stem:'#3a7018', // verde ao sol
+    trueLeaf:'#3a8010', trueLeafHi:'#50a018', // folhas verdadeiras (mais escuras, maduras)
   };
 
   // CANVAS_STAGE — atualizado a cada /crescer-canvas
   // 0=semente 1=germinando 2=emergindo 3=broto 4=cotilédones 5=folhas...
-  const CANVAS_STAGE = 4;
+  const CANVAS_STAGE = 5;
 
   let t=0;
 
@@ -1014,23 +1021,44 @@
     }
 
     if (stage >= 4) {
-      // Cotilédones abertos + caule
-      const sw = 0.7 + Math.sin(t * 0.018) * 0.12; // balançar suave
-      // Caule (3px acima do broto)
-      px(cx,   25, P.stem, 0.92);
-      px(cx,   24, P.stem, 0.85);
-      // Cotilédone esquerdo (abre em leque)
+      // Cotilédones abertos + caule (murcham progressivamente no stage 5)
+      const cotMult = stage >= 5 ? 0.45 : 1.0;
+      const sw = (0.7 + Math.sin(t * 0.018) * 0.12) * cotMult;
+      // Caule base
+      px(cx,   25, P.stem, 0.92 * cotMult);
+      px(cx,   24, P.stem, 0.85 * cotMult);
+      // Cotilédone esquerdo
       px(cx-1, 25, P.leaf, sw * 0.95);
       px(cx-2, 25, P.leaf, sw * 0.80);
       px(cx-2, 24, P.leaf, sw * 0.65);
       px(cx-3, 24, P.leaf, sw * 0.40);
-      // Cotilédone direito (simétrico)
+      // Cotilédone direito
       px(cx+1, 25, P.leaf, sw * 0.95);
       px(cx+2, 25, P.leaf, sw * 0.80);
       px(cx+2, 24, P.leaf, sw * 0.65);
       px(cx+3, 24, P.leaf, sw * 0.40);
-      // Nervura central (mais brilhante)
+      // Nervura central
       px(cx,   23, P.sprout, sw * 0.50);
+    }
+
+    if (stage >= 5) {
+      // Caule alongado (cresce acima dos cotilédones)
+      const fw = 0.65 + Math.sin(t * 0.022) * 0.10; // vento mais suave
+      px(cx, 23, P.stem, fw * 0.95);
+      px(cx, 22, P.stem, fw * 0.88);
+      px(cx, 21, P.stem, fw * 0.78);
+      // Primeiro par de folhas verdadeiras (y=20-21, mais estreitas e pontiagudas)
+      px(cx-1, 21, P.trueLeaf,   fw * 0.92);
+      px(cx-2, 21, P.trueLeaf,   fw * 0.75);
+      px(cx-2, 20, P.trueLeaf,   fw * 0.50);
+      px(cx-1, 20, P.trueLeafHi, fw * 0.60);
+      px(cx+1, 21, P.trueLeaf,   fw * 0.92);
+      px(cx+2, 21, P.trueLeaf,   fw * 0.75);
+      px(cx+2, 20, P.trueLeaf,   fw * 0.50);
+      px(cx+1, 20, P.trueLeafHi, fw * 0.60);
+      // Meristema apical (ponto de crescimento no topo)
+      px(cx, 20, P.sprout, fw * 0.72);
+      px(cx, 19, P.sprout, fw * 0.38);
     }
   }
 
@@ -1097,8 +1125,8 @@
 
   // ── Interações canvas ─────────────────────────────────────────
   canvas.addEventListener('click', ()=>{ S.clickPulse=1.0; });
-  window.regar     = ()=>{ sfxWater(); for(let i=0;i<18;i++) S.rain.push({x:5+Math.random()*(W-10),y:0,speed:0.25+Math.random()*0.35,life:1}); };
-  window.acariciar = ()=>{ sfxHeart(); S.heartPulse=1.0; };
+  window.regar     = ()=>{ sfxWater(); switchToSemente(); for(let i=0;i<18;i++) S.rain.push({x:5+Math.random()*(W-10),y:0,speed:0.25+Math.random()*0.35,life:1}); };
+  window.acariciar = ()=>{ sfxHeart(); switchToSemente(); S.heartPulse=1.0; };
 
   // ── Contador de visitantes (localStorage) ────────────────────
   // REVISAR decision: CANVAS_STAGE fica hardcoded no HTML — git É a persistência.
@@ -1133,6 +1161,16 @@
     const nr = nav.getBoundingClientRect();
     slider.style.left  = (tr.left - nr.left) + 'px';
     slider.style.width = tr.width + 'px';
+  }
+
+  function switchToSemente(){
+    const sTab=document.querySelector('[data-view="semente"]');
+    if(sTab.classList.contains('active'))return;
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    sTab.classList.add('active');
+    moveSlider(sTab);
+    document.getElementById('v-semente').classList.add('active');
   }
 
   // ── Navegação com Motion ──────────────────────────────────────
@@ -1273,8 +1311,10 @@
     if(tstage>=2){p(cx-1,29,P.crack,0.85);p(cx,28,P.crack,0.7);p(cx+1,29,P.crack,0.6);p(cx,29,P.crack,0.95);p(cx,29,P.hypo,0.9);p(cx,28,P.hypoTip,0.5);}
     // Broto
     if(tstage>=3){p(cx,28,P.sprout,0.9);p(cx,27,P.sprout,0.88);p(cx-1,27,P.leaf,0.55);p(cx+1,27,P.leaf,0.55);p(cx-1,26,P.sprout,0.7);p(cx+1,26,P.sprout,0.7);p(cx,26,P.leaf,0.5);}
-    // Cotilédones
-    if(tstage>=4){p(cx,25,P.stem,0.92);p(cx,24,P.stem,0.85);p(cx-1,25,P.leaf,0.95);p(cx-2,25,P.leaf,0.80);p(cx-2,24,P.leaf,0.65);p(cx-3,24,P.leaf,0.40);p(cx+1,25,P.leaf,0.95);p(cx+2,25,P.leaf,0.80);p(cx+2,24,P.leaf,0.65);p(cx+3,24,P.leaf,0.40);p(cx,23,P.sprout,0.50);}
+    // Cotilédones (murcham no stage 5)
+    if(tstage>=4){const cm=tstage>=5?0.45:1;p(cx,25,P.stem,0.92*cm);p(cx,24,P.stem,0.85*cm);p(cx-1,25,P.leaf,0.95*cm);p(cx-2,25,P.leaf,0.80*cm);p(cx-2,24,P.leaf,0.65*cm);p(cx-3,24,P.leaf,0.40*cm);p(cx+1,25,P.leaf,0.95*cm);p(cx+2,25,P.leaf,0.80*cm);p(cx+2,24,P.leaf,0.65*cm);p(cx+3,24,P.leaf,0.40*cm);p(cx,23,P.sprout,0.50*cm);}
+    // Folhas verdadeiras
+    if(tstage>=5){p(cx,23,P.stem,0.95);p(cx,22,P.stem,0.88);p(cx,21,P.stem,0.78);p(cx-1,21,P.trueLeaf,0.92);p(cx-2,21,P.trueLeaf,0.75);p(cx-2,20,P.trueLeaf,0.50);p(cx-1,20,P.trueLeafHi,0.60);p(cx+1,21,P.trueLeaf,0.92);p(cx+2,21,P.trueLeaf,0.75);p(cx+2,20,P.trueLeaf,0.50);p(cx+1,20,P.trueLeafHi,0.60);p(cx,20,P.sprout,0.72);p(cx,19,P.sprout,0.38);}
     // Semente (sempre)
     p(cx-1,30,P.seed);p(cx,30,P.seed);p(cx+1,30,P.seed);
     p(cx-1,31,P.seedDark);p(cx,31,P.seed);p(cx+1,31,P.seedDark);
@@ -1286,7 +1326,8 @@
     { stage:1, label:'dia 0',  date:'29 mai 2026', desc:'semente plantada' },
     { stage:2, label:'dia 1',  date:'30 mai 2026', desc:'rachadura · hipocótilo' },
     { stage:3, label:'dia 1+', date:'30 mai 2026', desc:'broto na superfície' },
-    { stage:4, label:'hoje',   date:'30 mai 2026', desc:'cotilédones abertos' },
+    { stage:4, label:'dia 2',  date:'31 mai 2026', desc:'cotilédones abertos' },
+    { stage:5, label:'hoje',   date:'31 mai 2026', desc:'folhas verdadeiras' },
   ];
 
   function initHistoria() {
@@ -1319,11 +1360,12 @@
   // ── Replay no canvas principal ────────────────────────────────
   window.replayEvolution=function(){
     if(S.replaying)return;
+    switchToSemente();
     const btn=document.getElementById('replayBtn');
     const btnF=document.getElementById('replayBtnFull');
     [btn,btnF].forEach(b=>{if(b)b.disabled=true;});
     S.replaying=true;
-    const stages=[0,1,2,3,4];
+    const stages=[0,1,2,3,4,5];
     stages.forEach((stage,i)=>{
       setTimeout(()=>{
         S.replayStage=stage;
@@ -1336,6 +1378,58 @@
       },i*1100);
     });
   };
+
+  // ── Tema dinâmico: hora + estação + clima ────────────────────────
+  const DYN_ACCENTS = {
+    midnight:  {acc:'#304070', hi:'#506090', glow:'rgba(48,64,112,0.10)'},
+    dawn:      {acc:'#d07840', hi:'#e89060', glow:'rgba(220,110,60,0.13)'},
+    morning:   {acc:'#5cb84a', hi:'#8acc5a', glow:'rgba(92,184,74,0.15)'},
+    afternoon: {acc:'#c8a030', hi:'#e0c058', glow:'rgba(200,160,50,0.12)'},
+    dusk:      {acc:'#c06848', hi:'#d88068', glow:'rgba(190,90,70,0.13)'},
+    night:     {acc:'#4068a0', hi:'#6090c8', glow:'rgba(60,90,160,0.12)'},
+  };
+  const DYN_GRADIENTS = {
+    midnight:  {g1:'rgba(16,24,70,0.08)',   g2:'rgba(10,15,50,0.04)',   dot:'#1e2030'},
+    dawn:      {g1:'rgba(230,110,55,0.11)', g2:'rgba(170,80,40,0.06)',  dot:'#2e2218'},
+    morning:   {g1:'rgba(80,175,60,0.09)',  g2:'rgba(55,130,40,0.04)',  dot:'#243a24'},
+    afternoon: {g1:'rgba(195,155,40,0.09)', g2:'rgba(150,115,20,0.05)', dot:'#2a3018'},
+    dusk:      {g1:'rgba(195,85,70,0.11)',  g2:'rgba(145,55,85,0.06)',  dot:'#2e1e1e'},
+    night:     {g1:'rgba(30,50,125,0.09)',  g2:'rgba(18,32,95,0.05)',   dot:'#1e2230'},
+  };
+  const SEASON_DOTS = { summer:'#2a3a20', autumn:'#2e2a18', winter:'#1e2830', spring:'#243a20' };
+
+  function getTimeKey(h){
+    if(h>=5&&h<8) return 'dawn';
+    if(h>=8&&h<12) return 'morning';
+    if(h>=12&&h<17) return 'afternoon';
+    if(h>=17&&h<20) return 'dusk';
+    if(h>=20) return 'night';
+    return 'midnight';
+  }
+  function getSeasonKey(m){
+    if(m>=3&&m<=5) return 'autumn';
+    if(m>=6&&m<=8) return 'winter';
+    if(m>=9&&m<=11) return 'spring';
+    return 'summer';
+  }
+  function updateDynTheme(){
+    if(themeRoxo) return;
+    const h=new Date().getHours(), m=new Date().getMonth()+1;
+    const code=S.weather?.code??-1;
+    const tk=getTimeKey(h), sk=getSeasonKey(m);
+    const acc=DYN_ACCENTS[tk], grad=DYN_GRADIENTS[tk];
+    const dot=SEASON_DOTS[sk]||grad.dot;
+    let g1=grad.g1, g2=grad.g2;
+    if(code>=95){ g1='rgba(55,45,95,0.14)'; g2='rgba(32,28,78,0.09)'; }
+    else if(code>=51&&code<=82){ g1=g1.replace(/[\d.]+\)$/,'0.12)'); }
+    document.documentElement.style.setProperty('--accent', acc.acc);
+    document.documentElement.style.setProperty('--accent-hi', acc.hi);
+    document.documentElement.style.setProperty('--glow-g', acc.glow);
+    const s=document.getElementById('dynBg');
+    s.textContent=`body:not(.theme-roxo)::before{background:radial-gradient(ellipse 80% 50% at 50% -10%,${g1} 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 80% 90%,${g2} 0%,transparent 55%),radial-gradient(circle,${dot} 1px,transparent 1px) 0 0/28px 28px;}`;
+  }
+  updateDynTheme();
+  setInterval(updateDynTheme, 60000);
 
   // ── Sons de UI (Web Audio API) ───────────────────────────────────
   let sfxCtx=null;
