@@ -97,10 +97,14 @@
     .header-right { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
     .clock-box {
       display: flex; flex-direction: column; align-items: flex-end;
-      font-size: 0.65rem; color: var(--text-dim); letter-spacing: 0.08em; line-height: 1.5;
+      font-size: 0.6rem; color: var(--text-dim); letter-spacing: 0.1em; line-height: 1.4;
     }
     .clock-box .time {
-      font-size: 1.1rem; font-weight: 700; color: var(--text-hi); letter-spacing: 0.04em;
+      font-size: 1.25rem; font-weight: 700; letter-spacing: 0.03em;
+      font-variant-numeric: tabular-nums;
+      background: linear-gradient(135deg, var(--text-hi) 0%, var(--accent-hi) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
     .badge {
       font-size: 0.6rem; letter-spacing: 0.15em; padding: 3px 9px;
@@ -137,8 +141,8 @@
       transition: color 0.25s, border-color 0.25s, background 0.25s;
       text-transform: uppercase; position: relative;
     }
-    .tab:hover  { color: var(--text); background: rgba(255,255,255,0.02); }
-    .tab.active { color: var(--accent-hi); border-bottom-color: var(--accent); }
+    .tab:hover  { color: var(--text-hi); background: rgba(255,255,255,0.025); }
+    .tab.active { color: var(--accent-hi); }
 
     /* ── Views — scroll contínuo ─────────────────────────────── */
     .view { display: block; }
@@ -207,12 +211,19 @@
     }
     /* Canvas wrap: glow grande, sem float */
     #v-semente .canvas-wrap {
-      animation: none;
+      animation: aura-breath 7s ease-in-out infinite;
       border: 1px solid var(--border);
-      box-shadow: 0 0 80px var(--glow-g), 0 0 200px rgba(0,0,0,0.22), 0 16px 60px rgba(0,0,0,0.5);
     }
     #v-semente .canvas-wrap:hover {
-      box-shadow: 0 0 130px var(--glow-g), 0 0 260px rgba(0,0,0,0.18), 0 20px 80px rgba(0,0,0,0.6);
+      animation: aura-breath-hover 4s ease-in-out infinite;
+    }
+    @keyframes aura-breath {
+      0%,100% { box-shadow: 0 0 70px var(--glow-g), 0 0 180px rgba(0,0,0,0.24), 0 16px 60px rgba(0,0,0,0.5); }
+      50%      { box-shadow: 0 0 130px var(--glow-g), 0 0 240px rgba(0,0,0,0.20), 0 20px 70px rgba(0,0,0,0.55); }
+    }
+    @keyframes aura-breath-hover {
+      0%,100% { box-shadow: 0 0 110px var(--glow-g), 0 0 220px rgba(0,0,0,0.20), 0 18px 70px rgba(0,0,0,0.55); }
+      50%      { box-shadow: 0 0 170px var(--glow-g), 0 0 280px rgba(0,0,0,0.18), 0 22px 90px rgba(0,0,0,0.6); }
     }
     /* Stats bar no hero: fundo surface-1, compacto */
     #v-semente .canvas-stats {
@@ -395,12 +406,13 @@
 
     /* Stats bar */
     .canvas-stats {
-      display: flex; gap: 0.8rem; justify-content: center; flex-wrap: wrap;
-      font-size: 0.6rem; color: var(--text-dim); letter-spacing: 0.1em;
+      display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
+      font-size: 0.6rem; color: var(--text-dim); letter-spacing: 0.12em;
       transition: background 0.4s, border-color 0.4s;
     }
-    .stat { display: flex; gap: 0.25rem; align-items: center; }
-    .stat .sv { color: var(--text-hi); font-weight: 700; }
+    .stat { display: flex; gap: 0.32rem; align-items: center; padding-right: 0.5rem; border-right: 1px solid var(--border-d); }
+    .stat:last-child { border-right: 0; padding-right: 0; }
+    .stat .sv { color: var(--text-hi); font-weight: 700; font-variant-numeric: tabular-nums; }
 
     /* Progress bar — web-design-guidelines: visualização de progresso */
     .progress-bar {
@@ -454,13 +466,17 @@
       border-color: var(--accent-lo);
     }
     .card-title {
-      font-size: 0.58rem; font-weight: 700; letter-spacing: 0.2em;
+      font-size: 0.56rem; font-weight: 700; letter-spacing: 0.22em;
       text-transform: uppercase; color: var(--text-dim);
-      border-bottom: 1px solid var(--border-d); padding-bottom: 0.4rem;
+      border-bottom: 1px solid var(--border-d); padding: 0 0 0.45rem 0.55rem;
+      margin: 0 0 0.15rem -0.55rem;
+      border-left: 2px solid var(--accent-lo);
+      transition: border-color 0.25s, color 0.25s;
     }
-    .card-main { font-size: 1.3rem; font-weight: 700; color: var(--text-hi); line-height: 1.2; }
-    .card-sub  { font-size: 0.68rem; color: var(--text); line-height: 1.6; }
-    .card-note { font-size: 0.6rem; color: var(--text-dim); }
+    .mundo-card:hover .card-title { color: var(--accent-hi); border-left-color: var(--accent); }
+    .card-main { font-size: 1.45rem; font-weight: 700; color: var(--text-hi); line-height: 1.15; font-variant-numeric: tabular-nums; }
+    .card-sub  { font-size: 0.68rem; color: var(--text); line-height: 1.65; }
+    .card-note { font-size: 0.58rem; color: var(--text-dim); letter-spacing: 0.06em; }
     .temp-big  {
       font-size: 2.4rem; font-weight: 700;
       background: linear-gradient(135deg, var(--gold), var(--accent-hi));
@@ -561,6 +577,7 @@
     #tabSlider {
       position: absolute; bottom: -1px; height: 2px; pointer-events: none;
       background: linear-gradient(90deg, var(--accent), var(--accent-hi));
+      box-shadow: 0 0 12px var(--accent-hi);
       transition: left 0.32s var(--ease), width 0.32s var(--ease);
     }
 
@@ -657,12 +674,18 @@
       box-shadow: 0 0 20px rgba(224,196,104,0.2) !important;
     }
 
-    /* Dica de teclado (minhoca) */
+    /* Dica de teclado (minhoca) — pill com blur */
     .worm-hint {
-      position: absolute; bottom: 0.6rem; right: 0.8rem;
-      font-size: 0.52rem; color: var(--text-dim); letter-spacing: 0.12em;
-      opacity: 0.6; user-select: none; pointer-events: none;
+      position: absolute; bottom: 0.7rem; right: 0.8rem;
+      font-size: 0.52rem; color: var(--text); letter-spacing: 0.15em;
+      padding: 0.22rem 0.6rem;
+      background: rgba(0,0,0,0.45);
+      border: 1px solid var(--border-d);
+      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+      user-select: none; pointer-events: none;
+      transition: opacity 0.4s; opacity: 0.85;
     }
+    .canvas-wrap:hover .worm-hint { opacity: 0.4; }
 
     /* ── Footer ──────────────────────────────────────────────── */
     footer {
