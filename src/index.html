@@ -154,6 +154,15 @@
     }
     .section-title::after { content:''; flex:1; height:1px; background: linear-gradient(90deg, var(--border), transparent 80%); }
     @keyframes viewIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+    /* Fallback CSS: elementos ficam visíveis mesmo se Motion CDN falhar */
+    @keyframes cssEnter { from{opacity:0} to{opacity:1} }
+    header      { animation: cssEnter 0.45s both; }
+    nav         { animation: cssEnter 0.35s 0.12s both; }
+    .block      { animation: cssEnter 0.38s 0.15s both; }
+    .g-item     { animation: cssEnter 0.28s 0.5s  both; }
+    .mundo-card { animation: cssEnter 0.5s  0.8s  both; }
+    .frame      { animation: cssEnter 0.4s  1s    both; }
+    footer      { animation: cssEnter 0.4s  0.55s both; }
 
     /* ── Hero: canvas preenche a 1ª sessão completa ─────────── */
     #v-semente {
@@ -255,10 +264,17 @@
 
     /* Day counter — gradient (ui-ux-pro-max: pesos extremos + cor dominante) */
     .day-num {
-      font-size: 3rem; font-weight: 700; line-height: 1;
+      font-size: 3.2rem; font-weight: 700; line-height: 1;
       background: linear-gradient(135deg, var(--gold) 0%, var(--accent-hi) 100%);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
       background-clip: text;
+      filter: drop-shadow(0 0 8px rgba(138,204,90,0.18));
+    }
+    /* Fase: dot + texto com gradiente sutil */
+    .phase-row .value {
+      background: linear-gradient(90deg, var(--text-hi) 0%, var(--accent) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; font-weight: 700;
     }
 
     .phase-row  { display: flex; align-items: center; gap: 0.5rem; font-size: 0.68rem; }
@@ -899,7 +915,8 @@
 </div>
 
 <script type="module">
-  import { animate, stagger } from 'https://cdn.jsdelivr.net/npm/motion@latest/+esm';
+  // Motion carregado dinamicamente — código crítico roda imediatamente sem esperar CDN
+  let _animate=()=>{}, _stagger=()=>0;
 
   // ── Estado ───────────────────────────────────────────────────
   const S = { weather:null, location:null, mood:null, rain:[], clickPulse:0, heartPulse:0, replaying:false, replayStage:0 };
@@ -927,13 +944,9 @@
   document.getElementById('canvasDay').textContent  = `dia ${day}`;
   document.getElementById('footerDay').textContent  = `dia ${day} de crescimento`;
 
-  // Contador animado
+  // Contador: valor imediato como fallback; Motion anima se disponível
   const dayEl = document.getElementById('dayNum');
-  if (day > 0) {
-    animate(0, day, { duration: 1.5, ease:[0.4,0,0.2,1], delay:0.4,
-      onUpdate: v => { dayEl.textContent = String(Math.round(v)).padStart(2,'0'); }
-    });
-  } else { dayEl.textContent = '00'; }
+  dayEl.textContent = day > 0 ? String(day).padStart(2,'0') : '00';
 
   // ── Calendário ───────────────────────────────────────────────
   function checkCalendar() {
@@ -1377,7 +1390,7 @@
       document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
       const at=document.querySelector(`.tab[data-view="${vid}"]`);
       if(at){at.classList.add('active');moveSlider(at);}
-      if(vid==='mundo') animate('.mundo-card',{opacity:[0,1],y:[10,0]},{duration:0.35,delay:stagger(0.06),ease:[0.4,0,0.2,1]});
+      if(vid==='mundo') _animate('.mundo-card',{opacity:[0,1],y:[10,0]},{duration:0.35,delay:_stagger(0.06),ease:[0.4,0,0.2,1]});
       if(vid==='chat')    initChat();
       if(vid==='historia') initHistoria();
     });
@@ -1556,8 +1569,8 @@
         setTimeout(()=>{S.replaying=false;},2000);
       });
     });
-    animate('.frame',{opacity:[0,1],y:[24,0],scale:[0.9,1]},
-      {duration:0.45,delay:stagger(0.12),ease:[0.4,0,0.2,1]});
+    _animate('.frame',{opacity:[0,1],y:[24,0],scale:[0.9,1]},
+      {duration:0.45,delay:_stagger(0.12),ease:[0.4,0,0.2,1]});
   }
 
   // ── Replay no canvas principal ────────────────────────────────
@@ -1733,15 +1746,20 @@
     document.getElementById('themeBtn').textContent=themeRoxo?'[ ◐ roxo ] tema':'[ ◐ verde ] tema';
   };
 
-  // ── Motion — entradas orquestradas ────────────────────────────
-  const E=[0.4,0,0.2,1];
-  animate('header',{opacity:[0,1],y:[6,0]},{duration:0.45,ease:E});
-  animate('nav',{opacity:[0,1]},{duration:0.35,delay:0.12,ease:E});
-  animate('.stage',{opacity:[0,1],scale:[0.96,1]},{duration:0.5,delay:0.18,ease:E});
-  animate('.sidebar-left .block',{opacity:[0,1],x:[-12,0]},{duration:0.38,delay:stagger(0.07,{start:0.12}),ease:E});
-  animate('.sidebar-right .block',{opacity:[0,1],x:[12,0]},{duration:0.38,delay:stagger(0.07,{start:0.22}),ease:E});
-  animate('.g-item',{opacity:[0,1],x:[-5,0]},{duration:0.28,delay:stagger(0.05,{start:0.42}),ease:E});
-  animate('footer',{opacity:[0,1]},{duration:0.4,delay:0.55,ease:E});
+  // ── Motion — import dinâmico (não bloqueia código crítico) ──────
+  // Se CDN falhar: CSS @keyframes cssEnter garante visibilidade como fallback
+  import('https://cdn.jsdelivr.net/npm/motion@11/+esm').then(({animate:a,stagger:s})=>{
+    _animate=a; _stagger=s;
+    const E=[0.4,0,0.2,1];
+    a('header',{opacity:[0,1],y:[6,0]},{duration:0.45,ease:E});
+    a('nav',{opacity:[0,1]},{duration:0.35,delay:0.12,ease:E});
+    a('.stage',{opacity:[0,1],scale:[0.96,1]},{duration:0.5,delay:0.18,ease:E});
+    a('.sidebar-left .block',{opacity:[0,1],x:[-12,0]},{duration:0.38,delay:s(0.07,{start:0.12}),ease:E});
+    a('.sidebar-right .block',{opacity:[0,1],x:[12,0]},{duration:0.38,delay:s(0.07,{start:0.22}),ease:E});
+    a('.g-item',{opacity:[0,1],x:[-5,0]},{duration:0.28,delay:s(0.05,{start:0.42}),ease:E});
+    a('footer',{opacity:[0,1]},{duration:0.4,delay:0.55,ease:E});
+    if(day>0) a(0,day,{duration:1.5,ease:E,delay:0.4,onUpdate:v=>{dayEl.textContent=String(Math.round(v)).padStart(2,'0');}});
+  }).catch(()=>{ /* CSS fallback já garante visibilidade */ });
 </script>
 </body>
 </html>
