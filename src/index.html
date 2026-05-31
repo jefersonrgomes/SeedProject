@@ -634,6 +634,36 @@
     .btn-replay:hover { background: rgba(92,184,74,0.16); color: var(--accent-hi); transform: scale(1.02); }
     .btn-replay:disabled { opacity: 0.4; cursor: default; transform: none; }
 
+    /* ── Frame detail (Evolução) ─────────────────────────────── */
+    .frame-detail {
+      display: none; max-width: 680px; margin: 0.5rem auto 0;
+      background: var(--s1); border: 1px solid var(--border-d);
+      padding: 1.1rem 1.4rem; animation: viewIn 0.28s both;
+    }
+    .frame-detail.active { display: block; }
+    .frame-detail-title {
+      font-size: 0.57rem; color: var(--accent-hi); letter-spacing: 0.18em;
+      text-transform: uppercase; font-weight: 700;
+      border-bottom: 1px solid var(--border-d); padding-bottom: 0.4rem; margin-bottom: 0.7rem;
+    }
+    .frame-detail-event {
+      font-size: 0.67rem; color: var(--text); line-height: 1.9;
+      padding: 0 0 0 0.75rem; border-left: 1px solid var(--accent-lo);
+      margin-bottom: 0.2rem; transition: border-color 0.2s, color 0.2s;
+    }
+    .frame-detail-event:hover { border-color: var(--accent); color: var(--text-hi); }
+    .frame.selected .frame-canvas {
+      border-color: var(--gold) !important;
+      box-shadow: 0 0 20px rgba(224,196,104,0.2) !important;
+    }
+
+    /* Dica de teclado (minhoca) */
+    .worm-hint {
+      position: absolute; bottom: 0.6rem; right: 0.8rem;
+      font-size: 0.52rem; color: var(--text-dim); letter-spacing: 0.12em;
+      opacity: 0.6; user-select: none; pointer-events: none;
+    }
+
     /* ── Footer ──────────────────────────────────────────────── */
     footer {
       border-top: 1px solid var(--border);
@@ -754,6 +784,7 @@
       <section class="stage">
         <div class="canvas-wrap" id="canvasWrap">
           <canvas id="c"></canvas>
+          <div class="worm-hint">↑↓←→ minhoca</div>
         </div>
         <div class="canvas-stats">
           <div class="stat">📅 dia <span class="sv" id="statDay">0</span></div>
@@ -894,6 +925,7 @@
     <div class="historia-layout">
       <div class="historia-title">linha do tempo · da semente às folhas</div>
       <div class="frames-row" id="framesRow"></div>
+      <div id="frameDetail" class="frame-detail"></div>
       <div class="replay-section">
         <button class="btn-replay" id="replayBtnFull" onclick="replayEvolution()">
           ▶ assistir evolução no canvas principal
@@ -919,7 +951,8 @@
   let _animate=()=>{}, _stagger=()=>0;
 
   // ── Estado ───────────────────────────────────────────────────
-  const S = { weather:null, location:null, mood:null, rain:[], clickPulse:0, heartPulse:0, replaying:false, replayStage:0 };
+  const S = { weather:null, location:null, mood:null, rain:[], clickPulse:0, heartPulse:0, replaying:false, replayStage:0,
+              worm:{x:13, y:38, dx:1, dy:0} }; // minhoca: posição e direção
   const START = new Date('2026-05-29T00:00:00');
   const day   = Math.max(0, Math.floor((Date.now() - START) / 86400000));
 
@@ -1244,10 +1277,9 @@
   }
 
   function drawWorm() {
-    const phase=t*0.0015, wx=13+Math.round(Math.sin(phase)*5), wy=38;
-    const right=Math.cos(phase)>0;
-    px(wx,wy,P.worm);px(wx+1,wy,P.wormMid);px(wx+2,wy,P.worm);
-    px(right?wx+3:wx-1,wy,P.wormHead);
+    const {x:wx,y:wy,dx} = S.worm;
+    px(wx,wy,P.worm); px(wx+1,wy,P.wormMid); px(wx+2,wy,P.worm);
+    px(dx>=0?wx+3:wx-1, wy, P.wormHead);
   }
 
   function drawRoot(phase) {
@@ -1317,6 +1349,14 @@
     ctx.fillRect(0,0,canvas.width,canvas.height);
     drawSky();
     const effectiveStage = S.replaying ? S.replayStage : CANVAS_STAGE;
+    // Minhoca: move a cada 12 frames, inverte direção nos limites do solo
+    if(t%12===0){
+      S.worm.x+=S.worm.dx; S.worm.y+=S.worm.dy;
+      if(S.worm.x<1){S.worm.x=1;S.worm.dx=1;}
+      if(S.worm.x>W-5){S.worm.x=W-5;S.worm.dx=-1;}
+      if(S.worm.y<29){S.worm.y=29;S.worm.dy=1;}
+      if(S.worm.y>H-3){S.worm.y=H-3;S.worm.dy=-1;}
+    }
     drawSoil(); drawSprout(effectiveStage); drawWorm(); drawBee(); drawRain(); drawHeart();
     drawRoot(rootPhase); drawSeed(pulse);
     requestAnimationFrame(render);
@@ -1325,6 +1365,13 @@
 
   // ── Interações canvas ─────────────────────────────────────────
   canvas.addEventListener('click', ()=>{ S.clickPulse=1.0; });
+
+  // ── Minhoca: controle por teclado ─────────────────────────────
+  document.addEventListener('keydown', e=>{
+    if(document.activeElement===document.getElementById('chatInput'))return;
+    const d={ArrowRight:[1,0],ArrowLeft:[-1,0],ArrowDown:[0,1],ArrowUp:[0,-1]}[e.key];
+    if(d){e.preventDefault();S.worm.dx=d[0];S.worm.dy=d[1];}
+  });
   window.regar     = ()=>{ sfxWater(); switchToSemente(); for(let i=0;i<18;i++) S.rain.push({x:5+Math.random()*(W-10),y:0,speed:0.25+Math.random()*0.35,life:1}); };
   window.acariciar = ()=>{ sfxHeart(); switchToSemente(); S.heartPulse=1.0; };
 
@@ -1538,12 +1585,43 @@
 
   // ── Linha do Tempo ────────────────────────────────────────────
   const FRAMES = [
-    { stage:1, label:'dia 0',  date:'29 mai 2026', desc:'semente plantada' },
-    { stage:2, label:'dia 1',  date:'30 mai 2026', desc:'rachadura · hipocótilo' },
-    { stage:3, label:'dia 1+', date:'30 mai 2026', desc:'broto na superfície' },
-    { stage:4, label:'dia 2',  date:'31 mai 2026', desc:'cotilédones abertos' },
-    { stage:5, label:'dia 2+', date:'31 mai 2026', desc:'folhas verdadeiras' },
-    { stage:6, label:'hoje',   date:'31 mai 2026', desc:'caule · vento · abelha' },
+    { stage:1, label:'dia 0',  date:'29 mai 2026', desc:'semente plantada', events:[
+      '🌱 Semente de angiosperma plantada no solo',
+      '💻 GitHub Pages configurado e publicado',
+      '🎨 Canvas pixel art 48×48 inicializado',
+      '🤖 Claude Sonnet 4.6 como agente autônomo',
+    ]},
+    { stage:2, label:'dia 1',  date:'30 mai 2026', desc:'rachadura · hipocótilo', events:[
+      '🔍 Rachadura aparece no solo — germinação ativa',
+      '🌿 Hipocótilo etiolado emerge (amarelo-verde, sem luz)',
+      '💧 Sistema de chuva animada implementado',
+      '🐛 Minhoca animada no subsolo',
+    ]},
+    { stage:3, label:'dia 1+', date:'30 mai 2026', desc:'broto na superfície', events:[
+      '🟢 Broto verde rompe a superfície — clorofila ativa!',
+      '☀️ Céu dinâmico: estrelas, lua crescente, sol, aurora',
+      '💬 Chat interativo com a semente',
+      '🌤️ Clima via Open-Meteo API + Nominatim geocoding',
+    ]},
+    { stage:4, label:'dia 2',  date:'31 mai 2026', desc:'cotilédones abertos', events:[
+      '🍃 Cotilédones abertos em leque fotossintético',
+      '🎨 Mood-driven theme: 10 estados de humor + clima',
+      '⏱️ Linha do tempo e replay de evolução',
+      '👁️ Contador de visitas via localStorage',
+    ]},
+    { stage:5, label:'dia 2+', date:'31 mai 2026', desc:'folhas verdadeiras', events:[
+      '🌿 Primeiras folhas verdadeiras emergem',
+      '🍂 Cotilédones murcham — energia transferida',
+      '🌈 Cores dinâmicas por hora + estação + clima',
+      '🎨 Tema roxo/cosmic alternativo',
+    ]},
+    { stage:6, label:'hoje',   date:'31 mai 2026', desc:'caule · vento · abelha', events:[
+      '📏 Caule cresce 6px com animação de vento senoidal',
+      '🐝 Abelha voa pelo canvas durante o dia (8h–20h)',
+      '🖥️ Layout hero: canvas preenche a 1ª sessão',
+      '📜 Navegação por scroll contínuo entre seções',
+      '⌨️ Minhoca controlável com teclas de direção',
+    ]},
   ];
 
   function initHistoria() {
@@ -1563,10 +1641,18 @@
       desc.className='frame-desc'; desc.textContent=f.desc;
       wrap.append(c,dateEl,desc);
       row.appendChild(wrap);
-      // Click: replay no canvas principal a partir deste estágio
+      // Click: replay + mostra eventos do período
       wrap.addEventListener('click',()=>{
-        S.replaying=true; S.replayStage=f.stage;
+        S.replayStage=f.stage; S.replaying=true;
         setTimeout(()=>{S.replaying=false;},2000);
+        document.querySelectorAll('.frame').forEach(fr=>fr.classList.remove('selected'));
+        wrap.classList.add('selected');
+        const detail=document.getElementById('frameDetail');
+        if(!detail)return;
+        detail.innerHTML=`<div class="frame-detail-title">${f.date} · ${f.label} · ${f.desc}</div>`
+          +(f.events||[]).map(ev=>`<div class="frame-detail-event">${ev}</div>`).join('');
+        detail.classList.add('active');
+        setTimeout(()=>detail.scrollIntoView({behavior:'smooth',block:'nearest'}),50);
       });
     });
     _animate('.frame',{opacity:[0,1],y:[24,0],scale:[0.9,1]},
@@ -1650,7 +1736,7 @@
   // ── Sons de UI (Web Audio API) ───────────────────────────────────
   let sfxCtx=null;
   function getSfxCtx(){ if(!sfxCtx) sfxCtx=new(window.AudioContext||window.webkitAudioContext)(); return sfxCtx; }
-  function playTone(freq,dur=0.08,type='sine',vol=0.07){
+  function playTone(freq,dur=0.12,type='sine',vol=0.3){
     try{
       const ctx=getSfxCtx();
       const play=()=>{
@@ -1658,20 +1744,23 @@
         const g=ctx.createGain();
         osc.connect(g);g.connect(ctx.destination);
         osc.type=type; osc.frequency.value=freq;
-        g.gain.setValueAtTime(vol,ctx.currentTime);
+        // Envelope: attack 10ms → sustain → release
+        g.gain.setValueAtTime(0,ctx.currentTime);
+        g.gain.linearRampToValueAtTime(vol,ctx.currentTime+0.01);
+        g.gain.setValueAtTime(vol*0.85,ctx.currentTime+dur*0.4);
         g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+dur);
-        osc.start(); osc.stop(ctx.currentTime+dur);
+        osc.start(); osc.stop(ctx.currentTime+dur+0.02);
       };
       if(ctx.state==='suspended') ctx.resume().then(play);
       else play();
     }catch(e){}
   }
-  function sfxClick(){ playTone(660,0.06,'sine',0.06); }
-  function sfxWater(){ playTone(440,0.12,'sine',0.09); setTimeout(()=>playTone(330,0.1,'sine',0.07),80); }
-  function sfxHeart(){ playTone(528,0.18,'sine',0.07); }
-  function sfxSend(){ playTone(880,0.07,'sine',0.06); }
-  function sfxReply(){ setTimeout(()=>{playTone(550,0.1,'sine',0.06);setTimeout(()=>playTone(660,0.08,'sine',0.05),100);},300); }
-  function sfxSuccess(){ playTone(1100,0.06,'sine',0.06);setTimeout(()=>playTone(880,0.06,'sine',0.05),80); }
+  function sfxClick(){ playTone(660,0.12,'sine',0.28); }
+  function sfxWater(){ playTone(440,0.18,'sine',0.32); setTimeout(()=>playTone(330,0.16,'sine',0.24),90); }
+  function sfxHeart(){ playTone(528,0.22,'sine',0.26); }
+  function sfxSend(){ playTone(880,0.12,'sine',0.26); }
+  function sfxReply(){ setTimeout(()=>{playTone(550,0.14,'sine',0.24);setTimeout(()=>playTone(660,0.12,'sine',0.2),110);},280); }
+  function sfxSuccess(){ playTone(1100,0.1,'sine',0.26);setTimeout(()=>playTone(880,0.1,'sine',0.22),90); }
 
   // ── Música: YouTube IFrame API (substitui Web Audio synth) ──────
   // Vídeo: "minecraft music for studying (c418 & lena raine)"
