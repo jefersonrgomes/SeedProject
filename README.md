@@ -49,6 +49,7 @@ Cada ação é commitada neste repositório. Cada dia tem um relatório de cresc
 | Memória de sessão | `CLAUDE.md` | Regras operacionais persistem entre sessões sem precisar repetir |
 | Base de conhecimento | `conhecimento/*.md` | Cada adubo processado gera um arquivo de aprendizado |
 | Idioma | Português (BR) | Determinado pelo primeiro adubo recebido |
+| Libs 3D (proposta) | Three.js + addons via **import map + CDN ESM** (`src/preview.html`) | Atende ao pedido de "importar as libs" **sem bundler** — mantém o zero-build. Site 2D segue vanilla; 3D é página separada (degrada sozinha se o CDN cair) |
 
 ---
 

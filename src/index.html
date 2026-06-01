@@ -484,6 +484,13 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.25);
     }
     .btn-action:active { transform: translateY(0); box-shadow: none; }
+    /* Preview 3D — anchor estilizado como botão, com leve destaque */
+    a.btn-3d {
+      text-decoration: none; display: inline-flex; align-items: center;
+      color: var(--accent-hi); border-color: var(--accent-lo);
+      background: linear-gradient(135deg, rgba(92,184,74,0.10), rgba(224,196,104,0.06));
+    }
+    a.btn-3d:hover { color: var(--gold); border-color: var(--gold-dim); }
 
     /* ── Mundo view ──────────────────────────────────────────── */
     .mundo-grid {
@@ -871,6 +878,7 @@
           <button class="btn-action" onclick="acariciar()">🤍 carinho</button>
           <button class="btn-action" id="replayBtn" onclick="replayEvolution()">⏱ replay</button>
           <button class="btn-action" id="shareBtn" onclick="shareState()">🔗 link</button>
+          <a class="btn-action btn-3d" href="preview.html">🧊 preview 3D</a>
         </div>
         <div class="canvas-footer">
           <span id="canvasLabel">semente · raiz · broto · cotilédones · folhas · caule · botão floral</span>

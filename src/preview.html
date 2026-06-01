@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Projeto Semente · Proposta 3D</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    /* Mesma linguagem visual do site 2D (paleta + tipografia) */
+    :root{
+      --bg:#0e160e; --s1:#172217; --border:#304830; --border-d:#1e2e1e;
+      --accent:#5cb84a; --accent-hi:#8acc5a; --gold:#e0c468;
+      --text:#9ab49a; --text-dim:#5c7a5c; --text-hi:#c8e0c8;
+      --font:'JetBrains Mono', monospace;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html,body{height:100%;}
+    body{
+      font-family:var(--font); background:var(--bg); color:var(--text);
+      overflow:hidden; position:relative;
+    }
+    #scene{position:fixed; inset:0; display:block; z-index:0;}
+
+    /* ── Camada 5: atmosfera — vinheta + grão fílmico (mesma do site 2D) ── */
+    .cine{position:fixed; inset:0; pointer-events:none; z-index:2;}
+    .cine.vignette{
+      background:radial-gradient(ellipse 78% 82% at 50% 46%, transparent 54%, rgba(0,0,0,0.55) 100%);
+    }
+    .cine.grain{
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size:140px 140px; opacity:0.04; animation:grain 5.4s steps(5) infinite;
+    }
+    @keyframes grain{
+      0%{background-position:0 0;}20%{background-position:-28px 18px;}
+      40%{background-position:22px -26px;}60%{background-position:-18px -14px;}
+      80%{background-position:26px 20px;}100%{background-position:0 0;}
+    }
+
+    /* ── HUD ── */
+    .hud{position:fixed; z-index:3; pointer-events:none;}
+    .hud a, .hud button{pointer-events:auto;}
+    .hud-tl{top:1.4rem; left:1.6rem;}
+    .hud-tr{top:1.4rem; right:1.6rem; text-align:right;}
+    .hud-bl{bottom:1.4rem; left:1.6rem;}
+    .hud-br{bottom:1.4rem; right:1.6rem; text-align:right;}
+    .title{
+      font-size:0.8rem; font-weight:700; letter-spacing:0.22em; text-transform:uppercase;
+      background:linear-gradient(135deg, var(--text-hi) 0%, var(--accent-hi) 100%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    }
+    .subtitle{font-size:0.6rem; color:var(--text-dim); letter-spacing:0.14em; margin-top:0.35rem;}
+    .badge3d{
+      display:inline-block; margin-top:0.6rem; font-size:0.55rem; letter-spacing:0.18em;
+      text-transform:uppercase; color:var(--accent-hi);
+      border:1px solid var(--border); background:rgba(92,184,74,0.06); padding:3px 9px;
+    }
+    .back{
+      display:inline-flex; align-items:center; gap:0.4rem; text-decoration:none;
+      font-size:0.66rem; letter-spacing:0.1em; color:var(--text-dim);
+      border:1px solid var(--border); background:rgba(14,22,14,0.55);
+      backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+      padding:7px 13px; transition:color 0.2s, border-color 0.2s, background 0.2s;
+    }
+    .back:hover{color:var(--accent-hi); border-color:var(--accent); background:rgba(92,184,74,0.1);}
+
+    /* Camadas visuais (documenta o "melhorar 5x" dentro do produto) */
+    .layers{
+      font-size:0.56rem; letter-spacing:0.06em; line-height:1.9; color:var(--text-dim);
+      background:rgba(14,22,14,0.5); border:1px solid var(--border-d);
+      backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+      padding:0.7rem 0.9rem; max-width:230px;
+    }
+    .layers b{color:var(--text-hi); font-weight:700; letter-spacing:0.14em;
+      display:block; margin-bottom:0.35rem; font-size:0.54rem; text-transform:uppercase;}
+    .layers .ly{display:flex; gap:0.5rem;}
+    .layers .ly .n{color:var(--accent-hi); flex-shrink:0;}
+    .hint{font-size:0.58rem; color:var(--text-dim); letter-spacing:0.14em;}
+
+    /* Loading + erro */
+    .overlay{
+      position:fixed; inset:0; z-index:5; display:flex; flex-direction:column;
+      align-items:center; justify-content:center; gap:1rem; text-align:center;
+      background:var(--bg); transition:opacity 0.6s; padding:2rem;
+    }
+    .overlay.hide{opacity:0; pointer-events:none;}
+    .spin{
+      width:42px; height:42px; border:2px solid var(--border);
+      border-top-color:var(--accent-hi); border-radius:50%;
+      animation:spin 0.9s linear infinite;
+    }
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .ov-txt{font-size:0.66rem; letter-spacing:0.16em; color:var(--text-dim); text-transform:uppercase;}
+    #err{display:none;}
+    #err .ov-txt{color:var(--text); max-width:420px; line-height:1.8;}
+
+    @media (max-width:620px){
+      .layers{display:none;}
+      .hud-tl{left:1rem; top:1rem;} .hud-tr{right:1rem; top:1rem;}
+      .hud-br{right:1rem; bottom:1rem;}
+    }
+    @media (prefers-reduced-motion: reduce){
+      .cine.grain{animation:none;}
+    }
+  </style>
+
+  <!-- Import map: Three.js + addons via CDN ESM — zero build, fiel ao GitHub Pages -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <canvas id="scene"></canvas>
+
+  <div class="cine vignette"></div>
+  <div class="cine grain"></div>
+
+  <div class="hud hud-tl">
+    <div class="title">Projeto Semente</div>
+    <div class="subtitle">proposta 3D — webgl em tempo real</div>
+    <span class="badge3d">three.js r160 · unreal bloom</span>
+  </div>
+
+  <div class="hud hud-tr">
+    <a class="back" href="index.html">← voltar ao site 2D</a>
+  </div>
+
+  <div class="hud hud-bl">
+    <div class="layers">
+      <b>5 camadas de design</b>
+      <div class="ly"><span class="n">1.</span><span>Cena 3D — solo, semente, caule e botão floral com luz volumétrica</span></div>
+      <div class="ly"><span class="n">2.</span><span>Unreal Bloom — brilho cinematográfico no que é vivo</span></div>
+      <div class="ly"><span class="n">3.</span><span>Pólen — partículas com blend aditivo subindo</span></div>
+      <div class="ly"><span class="n">4.</span><span>Câmera viva — parallax no cursor + órbita lenta</span></div>
+      <div class="ly"><span class="n">5.</span><span>Atmosfera — névoa, vinheta e grão fílmico</span></div>
+    </div>
+  </div>
+
+  <div class="hud hud-br">
+    <div class="hint">mova o cursor · a planta respira</div>
+  </div>
+
+  <div class="overlay" id="loading">
+    <div class="spin"></div>
+    <div class="ov-txt">germinando a cena 3D…</div>
+  </div>
+  <div class="overlay hide" id="err">
+    <div class="ov-txt">
+      Não foi possível carregar a cena WebGL.<br>
+      Talvez o navegador não suporte WebGL ou o CDN esteja indisponível.<br><br>
+      <a class="back" href="index.html">← voltar ao site 2D</a>
+    </div>
+  </div>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+    import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+    import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+    import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    try {
+      const canvas = document.getElementById('scene');
+      const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.05;
+
+      const scene = new THREE.Scene();
+      scene.fog = new THREE.FogExp2(0x0a120a, 0.085);
+
+      const camera = new THREE.PerspectiveCamera(42, window.innerWidth/window.innerHeight, 0.1, 100);
+      const CAM_BASE = new THREE.Vector3(0, 1.7, 7.4);
+      camera.position.copy(CAM_BASE);
+      camera.lookAt(0, 1.4, 0);
+
+      // ── Luzes ──────────────────────────────────────────────
+      scene.add(new THREE.AmbientLight(0x21331f, 0.7));
+      const key = new THREE.DirectionalLight(0xfff0d0, 1.15);
+      key.position.set(3.5, 6, 3); scene.add(key);
+      const warm = new THREE.PointLight(0xffcf70, 22, 14, 2);
+      warm.position.set(2.4, 2.6, 1.6); scene.add(warm);
+      const glow = new THREE.PointLight(0x6cff7a, 10, 8, 2);
+      glow.position.set(0, 0.4, 0.6); scene.add(glow);
+      const rim = new THREE.PointLight(0x3a6ed0, 12, 16, 2);
+      rim.position.set(-3, 2, -4); scene.add(rim);
+
+      // ── Grupo da planta (gira/respira como um todo) ────────
+      const plant = new THREE.Group();
+      scene.add(plant);
+
+      // Solo — disco escuro com leve relevo
+      const soilGeo = new THREE.CircleGeometry(4.2, 64);
+      soilGeo.rotateX(-Math.PI/2);
+      const pos = soilGeo.attributes.position;
+      for (let i=0;i<pos.count;i++){
+        const x=pos.getX(i), z=pos.getZ(i);
+        pos.setY(i, (Math.sin(x*1.6)+Math.cos(z*1.7))*0.045 - 0.02);
+      }
+      soilGeo.computeVertexNormals();
+      const soil = new THREE.Mesh(soilGeo, new THREE.MeshStandardMaterial({
+        color:0x2a1a0e, roughness:0.95, metalness:0.0
+      }));
+      scene.add(soil);
+
+      // Semente — icosaedro dourado emissivo (puxa o bloom)
+      const seed = new THREE.Mesh(
+        new THREE.IcosahedronGeometry(0.2, 0),
+        new THREE.MeshStandardMaterial({ color:0xc8a85a, emissive:0xe0c468, emissiveIntensity:1.4, roughness:0.4 })
+      );
+      seed.position.set(0, 0.14, 0); plant.add(seed);
+
+      // Caule — tubo ao longo de uma curva suave em S
+      const curve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(0, 0.1, 0),
+        new THREE.Vector3(0.06, 0.7, 0.04),
+        new THREE.Vector3(-0.05, 1.35, -0.03),
+        new THREE.Vector3(0.04, 2.0, 0.02),
+        new THREE.Vector3(0, 2.5, 0),
+      ]);
+      const stem = new THREE.Mesh(
+        new THREE.TubeGeometry(curve, 48, 0.05, 10, false),
+        new THREE.MeshStandardMaterial({ color:0x3a7018, emissive:0x163a0c, emissiveIntensity:0.5, roughness:0.7 })
+      );
+      plant.add(stem);
+
+      // Folha — Shape com bézier, dupla face
+      function makeLeaf(scale){
+        const s = new THREE.Shape();
+        s.moveTo(0,0);
+        s.bezierCurveTo(0.18,0.12, 0.34,0.42, 0, 0.92);
+        s.bezierCurveTo(-0.34,0.42, -0.18,0.12, 0,0);
+        const g = new THREE.ShapeGeometry(s, 24);
+        g.scale(scale, scale, scale);
+        return new THREE.Mesh(g, new THREE.MeshStandardMaterial({
+          color:0x4a9020, emissive:0x16300a, emissiveIntensity:0.45,
+          roughness:0.6, metalness:0.0, side:THREE.DoubleSide
+        }));
+      }
+      // Distribui folhas ao longo do caule
+      const leafAt = [
+        {t:0.32, side: 1, sc:1.15, tilt:-0.5},
+        {t:0.34, side:-1, sc:1.15, tilt: 0.5},
+        {t:0.62, side: 1, sc:0.95, tilt:-0.4},
+        {t:0.64, side:-1, sc:0.95, tilt: 0.4},
+        {t:0.84, side: 1, sc:0.7,  tilt:-0.3},
+        {t:0.86, side:-1, sc:0.7,  tilt: 0.3},
+      ];
+      const leaves = [];
+      for (const L of leafAt){
+        const leaf = makeLeaf(L.sc);
+        const p = curve.getPointAt(L.t);
+        leaf.position.copy(p);
+        leaf.rotation.z = L.side * (Math.PI/2.2);
+        leaf.rotation.y = L.side * 0.5;
+        leaf.rotation.x = L.tilt;
+        leaf.userData.base = leaf.rotation.x;
+        leaf.userData.phase = Math.random()*Math.PI*2;
+        plant.add(leaf); leaves.push(leaf);
+      }
+
+      // Botão floral — sépalas verdes + pétalas rosa fechadas (stage 7)
+      const bud = new THREE.Group();
+      bud.position.set(0, 2.55, 0);
+      const calyx = new THREE.Mesh(
+        new THREE.ConeGeometry(0.16, 0.3, 12),
+        new THREE.MeshStandardMaterial({ color:0x4a8020, emissive:0x16300a, emissiveIntensity:0.4, roughness:0.6 })
+      );
+      calyx.position.y = -0.02; bud.add(calyx);
+      const petalMat = new THREE.MeshStandardMaterial({
+        color:0xc87890, emissive:0xe8a8c0, emissiveIntensity:1.1, roughness:0.45
+      });
+      const core = new THREE.Mesh(new THREE.SphereGeometry(0.16, 16, 16), petalMat);
+      core.position.y = 0.12; core.scale.set(0.8,1.25,0.8); bud.add(core);
+      for (let i=0;i<4;i++){
+        const petal = new THREE.Mesh(new THREE.SphereGeometry(0.085, 12, 12), petalMat);
+        const a = (i/4)*Math.PI*2;
+        petal.position.set(Math.cos(a)*0.085, 0.1, Math.sin(a)*0.085);
+        petal.scale.set(0.7,1.35,0.7); bud.add(petal);
+      }
+      const tip = new THREE.Mesh(new THREE.SphereGeometry(0.06, 12, 12),
+        new THREE.MeshStandardMaterial({ color:0xe8a8c0, emissive:0xf0c0d4, emissiveIntensity:1.5, roughness:0.4 }));
+      tip.position.y = 0.27; bud.add(tip);
+      plant.add(bud);
+
+      // ── Pólen — partículas com blend aditivo subindo ──────
+      const N = 150;
+      const pGeo = new THREE.BufferGeometry();
+      const pArr = new Float32Array(N*3);
+      const pVel = new Float32Array(N);
+      for (let i=0;i<N;i++){
+        pArr[i*3]   = (Math.random()-0.5)*6;
+        pArr[i*3+1] = Math.random()*5;
+        pArr[i*3+2] = (Math.random()-0.5)*6;
+        pVel[i] = 0.002 + Math.random()*0.006;
+      }
+      pGeo.setAttribute('position', new THREE.BufferAttribute(pArr, 3));
+      const pollen = new THREE.Points(pGeo, new THREE.PointsMaterial({
+        color:0xe6d98a, size:0.05, transparent:true, opacity:0.85,
+        blending:THREE.AdditiveBlending, depthWrite:false
+      }));
+      scene.add(pollen);
+
+      // ── Post-processing: Unreal Bloom ─────────────────────
+      const composer = new EffectComposer(renderer);
+      composer.addPass(new RenderPass(scene, camera));
+      const bloom = new UnrealBloomPass(
+        new THREE.Vector2(window.innerWidth, window.innerHeight), 0.9, 0.5, 0.55);
+      composer.addPass(bloom);
+      composer.addPass(new OutputPass());
+
+      // ── Interação — parallax do cursor ────────────────────
+      const ptr = { x:0, y:0, tx:0, ty:0 };
+      window.addEventListener('pointermove', e=>{
+        ptr.tx = (e.clientX/window.innerWidth  - 0.5);
+        ptr.ty = (e.clientY/window.innerHeight - 0.5);
+      }, {passive:true});
+
+      // ── Resize ────────────────────────────────────────────
+      window.addEventListener('resize', ()=>{
+        const w=window.innerWidth, h=window.innerHeight;
+        camera.aspect = w/h; camera.updateProjectionMatrix();
+        renderer.setSize(w, h); composer.setSize(w, h);
+      });
+
+      // ── Loop ──────────────────────────────────────────────
+      const clock = new THREE.Clock();
+      function animate(){
+        requestAnimationFrame(animate);
+        const dt = clock.getDelta();
+        const tt = clock.elapsedTime;
+
+        if (!reduce){
+          // Órbita lenta + respiração do grupo
+          plant.rotation.y += dt*0.18;
+          plant.rotation.z = Math.sin(tt*0.6)*0.025;
+          plant.position.y = Math.sin(tt*0.9)*0.04;
+          // Folhas oscilam como ao vento
+          for (const lf of leaves) lf.rotation.x = lf.userData.base + Math.sin(tt*1.4 + lf.userData.phase)*0.12;
+          // Pulso emissivo da semente e da ponta da flor
+          seed.material.emissiveIntensity = 1.2 + Math.sin(tt*1.6)*0.4;
+          tip.material.emissiveIntensity  = 1.3 + Math.sin(tt*2.0)*0.5;
+        }
+
+        // Pólen sobe e reembaralha
+        const a = pollen.geometry.attributes.position;
+        for (let i=0;i<N;i++){
+          let y = a.getY(i) + pVel[i] + (reduce?0:0);
+          if (y > 5){ y = 0; a.setX(i,(Math.random()-0.5)*6); a.setZ(i,(Math.random()-0.5)*6); }
+          a.setY(i, y);
+        }
+        a.needsUpdate = true;
+
+        // Câmera segue o cursor com amortecimento (parallax)
+        ptr.x += (ptr.tx - ptr.x)*0.04;
+        ptr.y += (ptr.ty - ptr.y)*0.04;
+        camera.position.x = CAM_BASE.x + ptr.x*2.2;
+        camera.position.y = CAM_BASE.y - ptr.y*1.4;
+        camera.lookAt(0, 1.4, 0);
+
+        composer.render();
+      }
+      animate();
+
+      // Esconde loading
+      requestAnimationFrame(()=>{
+        const l = document.getElementById('loading');
+        if (l) l.classList.add('hide');
+      });
+
+    } catch (e) {
+      console.error(e);
+      const l = document.getElementById('loading'); if (l) l.classList.add('hide');
+      const err = document.getElementById('err'); if (err){ err.classList.remove('hide'); err.style.display='flex'; }
+    }
+  </script>
+</body>
+</html>
