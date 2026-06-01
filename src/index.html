@@ -778,9 +778,9 @@
           <div class="label">fase</div>
           <div class="phase-row"><div class="dot"></div><span class="value">Fase 0 — Germinação</span></div>
           <div class="progress-bar" title="Progresso até floração">
-            <div class="progress-fill" id="stageFill" style="width:82%"></div>
+            <div class="progress-fill" id="stageFill" style="width:88%"></div>
           </div>
-          <div class="value dim" style="font-size:0.58rem">82% → flores e fruto</div>
+          <div class="value dim" style="font-size:0.58rem">88% → flor aberta e fruto</div>
         </div>
         <div class="block">
           <div class="label">humor</div>
@@ -836,8 +836,8 @@
         <div class="canvas-stats">
           <div class="stat">📅 dia <span class="sv" id="statDay">0</span></div>
           <div class="stat">⎇ commits <span class="sv" id="statCommits">20</span></div>
-          <div class="stat">🌿 caule <span class="sv">6px</span></div>
-          <div class="stat">🌱 próximo <span class="sv">floração</span></div>
+          <div class="stat">🌸 flor <span class="sv">botão</span></div>
+          <div class="stat">🌱 próximo <span class="sv">flor aberta</span></div>
           <div class="stat">👁 visitas <span class="sv" id="statVisits">1</span></div>
         </div>
         <div class="canvas-actions">
@@ -847,7 +847,7 @@
           <button class="btn-action" id="shareBtn" onclick="shareState()">🔗 link</button>
         </div>
         <div class="canvas-footer">
-          <span id="canvasLabel">semente · raiz · broto · cotilédones · folhas · caule</span>
+          <span id="canvasLabel">semente · raiz · broto · cotilédones · folhas · caule · botão floral</span>
           <span id="canvasDay">dia 0</span>
         </div>
       </section>
@@ -878,16 +878,17 @@
             <div class="g-item done">  <span class="icon">✓</span><span>Abelha voando no canvas</span></div>
             <div class="g-item done">  <span class="icon">✓</span><span>Layout hero + scroll</span></div>
             <div class="g-item done">  <span class="icon">✓</span><span>Canvas hero fullscreen</span></div>
-            <div class="g-item active"><span class="icon">●</span><span>Profundidade 3D · tilt + parallax</span></div>
+            <div class="g-item done">  <span class="icon">✓</span><span>Profundidade 3D · tilt + parallax</span></div>
+            <div class="g-item active"><span class="icon">●</span><span>Botão floral · floração (stage 7)</span></div>
           </div>
         </div>
         <div class="block">
           <div class="label">próximo</div>
           <div class="next-list">
-            <div class="next-item">Floração — botão e pétalas</div>
-            <div class="next-item">Fruto — pixel art 3D</div>
+            <div class="next-item">Flor aberta — pétalas em leque</div>
+            <div class="next-item">Fruto — pixel art arredondado</div>
+            <div class="next-item">Polinização — abelha visita a flor</div>
             <div class="next-item">Fase 2 SDD — agente único</div>
-            <div class="next-item">Canvas hero expandido</div>
           </div>
         </div>
         <div class="block">
@@ -1166,11 +1167,12 @@
     hypo:'#a0b840',   hypoTip:'#c4d850', // etiolado — cresceu sem luz
     sprout:'#68a030', leaf:'#4a9020', stem:'#3a7018', // verde ao sol
     trueLeaf:'#3a8010', trueLeafHi:'#50a018', // folhas verdadeiras (mais escuras, maduras)
+    sepal:'#4a8020',  bud:'#c87890',  budHi:'#e8a8c0', // floração — sépalas verdes + botão rosa
   };
 
   // CANVAS_STAGE — atualizado a cada /crescer-canvas
-  // 0=semente 1=germinando 2=emergindo 3=broto 4=cotilédones 5=folhas 6=caule+vento
-  const CANVAS_STAGE = 6;
+  // 0=semente 1=germinando 2=emergindo 3=broto 4=cotilédones 5=folhas 6=caule+vento 7=botão floral
+  const CANVAS_STAGE = 7;
 
   let t=0;
 
@@ -1322,6 +1324,26 @@
       // Meristema no topo (crescendo)
       px(cx+wo6(14), 14, P.sprout, w6 * 0.62);
       px(cx+wo6(13), 13, P.sprout, w6 * 0.30);
+    }
+
+    if (stage >= 7) {
+      // Floração — botão floral no ápice (sépalas verdes envolvem pétalas rosa)
+      const fl  = 0.7 + Math.sin(t * 0.02) * 0.12;     // pulso de respiração da flor
+      const wo7 = (y) => Math.round(Math.sin(t*0.022 + y*0.15) * (26-y) * 0.06);
+      // Caule sobe e conecta ao meristema do stage 6
+      px(cx+wo7(13), 13, P.stem, fl * 0.88);
+      px(cx+wo7(12), 12, P.stem, fl * 0.80);
+      // Sépalas verdes na base do botão
+      px(cx-1+wo7(11), 11, P.sepal, fl * 0.70);
+      px(cx+1+wo7(11), 11, P.sepal, fl * 0.70);
+      px(cx+wo7(11),   11, P.bud,   fl * 0.85);
+      // Corpo do botão (pétalas fechadas)
+      px(cx+wo7(10),   10, P.bud,   fl * 0.95);
+      px(cx-1+wo7(10), 10, P.bud,   fl * 0.55);
+      px(cx+1+wo7(10), 10, P.bud,   fl * 0.55);
+      // Ponta começando a abrir (highlight)
+      px(cx+wo7(9),     9, P.budHi, fl * 0.90);
+      px(cx+wo7(8),     8, P.budHi, fl * 0.50);
     }
   }
 
@@ -1690,6 +1712,8 @@
     if(tstage>=5){p(cx,23,P.stem,0.95);p(cx,22,P.stem,0.88);p(cx,21,P.stem,0.78);p(cx-1,21,P.trueLeaf,0.92);p(cx-2,21,P.trueLeaf,0.75);p(cx-2,20,P.trueLeaf,0.50);p(cx-1,20,P.trueLeafHi,0.60);p(cx+1,21,P.trueLeaf,0.92);p(cx+2,21,P.trueLeaf,0.75);p(cx+2,20,P.trueLeaf,0.50);p(cx+1,20,P.trueLeafHi,0.60);p(cx,20,P.sprout,0.72);p(cx,19,P.sprout,0.38);}
     // Caule maior + 2º par de folhas
     if(tstage>=6){p(cx,19,P.stem,0.96);p(cx,18,P.stem,0.90);p(cx,17,P.stem,0.82);p(cx,16,P.stem,0.72);p(cx,15,P.stem,0.60);p(cx-1,17,P.trueLeaf,0.88);p(cx-2,17,P.trueLeaf,0.68);p(cx-2,16,P.trueLeaf,0.44);p(cx+1,17,P.trueLeaf,0.88);p(cx+2,17,P.trueLeaf,0.68);p(cx+2,16,P.trueLeaf,0.44);p(cx,14,P.sprout,0.62);p(cx,13,P.sprout,0.30);}
+    // Botão floral (stage 7)
+    if(tstage>=7){p(cx,13,P.stem,0.88);p(cx,12,P.stem,0.80);p(cx-1,11,P.sepal,0.70);p(cx+1,11,P.sepal,0.70);p(cx,11,P.bud,0.85);p(cx,10,P.bud,0.95);p(cx-1,10,P.bud,0.55);p(cx+1,10,P.bud,0.55);p(cx,9,P.budHi,0.90);p(cx,8,P.budHi,0.50);}
     // Semente (sempre)
     p(cx-1,30,P.seed);p(cx,30,P.seed);p(cx+1,30,P.seed);
     p(cx-1,31,P.seedDark);p(cx,31,P.seed);p(cx+1,31,P.seedDark);
@@ -1728,12 +1752,18 @@
       '🌈 Cores dinâmicas por hora + estação + clima',
       '🎨 Tema roxo/cosmic alternativo',
     ]},
-    { stage:6, label:'hoje',   date:'31 mai 2026', desc:'caule · vento · abelha', events:[
+    { stage:6, label:'dia 2',  date:'31 mai 2026', desc:'caule · vento · abelha', events:[
       '📏 Caule cresce 6px com animação de vento senoidal',
       '🐝 Abelha voa pelo canvas durante o dia (8h–20h)',
       '🖥️ Layout hero: canvas preenche a 1ª sessão',
       '📜 Navegação por scroll contínuo entre seções',
       '⌨️ Minhoca controlável com teclas de direção',
+    ]},
+    { stage:7, label:'hoje',   date:'01 jun 2026', desc:'botão floral', events:[
+      '🌸 Botão floral surge no ápice do caule — sépalas + pétalas',
+      '🧊 Profundidade 3D: tilt do canvas + spotlight + sheen (spline/peachweb)',
+      '🎬 Revelação coreografada das seções no scroll (theatre.js)',
+      '♿ prefers-reduced-motion respeitado (tilt/float desligam)',
     ]},
   ];
 
@@ -1780,7 +1810,7 @@
     const btnF=document.getElementById('replayBtnFull');
     [btn,btnF].forEach(b=>{if(b)b.disabled=true;});
     S.replaying=true;
-    const stages=[0,1,2,3,4,5,6];
+    const stages=[0,1,2,3,4,5,6,7];
     stages.forEach((stage,i)=>{
       setTimeout(()=>{
         S.replayStage=stage;
