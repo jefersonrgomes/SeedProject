@@ -758,16 +758,89 @@
       .tab { padding: 0.5rem 0.8rem; font-size: 0.65rem; }
     }
 
+    /* ════ melhorar 10x — passada de refinamento 2D ═══════════════ */
+
+    /* (1) Barra de progresso de leitura — topo fixo */
+    #readProgress {
+      position: fixed; top: 0; left: 0; height: 2px; width: 0;
+      z-index: 200; pointer-events: none;
+      background: linear-gradient(90deg, var(--accent-lo), var(--accent-hi) 60%, var(--gold));
+      box-shadow: 0 0 10px var(--accent-hi);
+      transition: width 0.1s linear;
+    }
+
+    /* (2) Shimmer animado no título do logo */
+    .logo h1 { background-size: 220% 100%; animation: logoShimmer 6s ease-in-out infinite; }
+    @keyframes logoShimmer { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+
+    /* (3) Seleção de texto temática */
+    ::selection { background: rgba(92,184,74,0.28); color: var(--text-hi); }
+
+    /* (4) Foco acessível visível (navegação por teclado) */
+    .tab:focus-visible, .btn-action:focus-visible, #soundBtn:focus-visible,
+    #themeBtn:focus-visible, #chatSend:focus-visible, #chatInput:focus-visible,
+    .gh-link:focus-visible, a.btn-3d:focus-visible, .btn-replay:focus-visible {
+      outline: 2px solid var(--accent-hi); outline-offset: 2px;
+    }
+
+    /* (5) Botão preview 3D — brilho pulsante que convida ao clique */
+    a.btn-3d { animation: btn3dPulse 3.4s ease-in-out infinite; }
+    @keyframes btn3dPulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(224,196,104,0); }
+      50%     { box-shadow: 0 0 14px 1px rgba(224,196,104,0.28); }
+    }
+
+    /* (6) Chips de stats — reativos no hover */
+    .stat { transition: color 0.2s; }
+    .stat:hover { color: var(--text); }
+    .stat:hover .sv { color: var(--accent-hi); text-shadow: 0 0 8px var(--glow-g); }
+
+    /* (7) Linha do rodapé com sweep de luz */
+    footer { position: relative; }
+    footer::before {
+      content: ''; position: absolute; top: -1px; left: 0; height: 1px; width: 100%;
+      background: linear-gradient(90deg, transparent, var(--accent-hi), transparent);
+      background-size: 50% 100%; background-repeat: no-repeat;
+      animation: footerSweep 7s ease-in-out infinite; opacity: 0.7;
+    }
+    @keyframes footerSweep { 0% { background-position: -50% 0; } 100% { background-position: 150% 0; } }
+
+    /* (8) Nav tabs — leve elevação no hover + glow no ativo */
+    .tab { transition: color 0.25s, border-color 0.25s, background 0.25s, transform 0.15s; }
+    .tab:hover { transform: translateY(-1px); }
+    .tab.active { text-shadow: 0 0 10px rgba(138,204,90,0.35); }
+
+    /* (9) Day-num — respiração luminosa */
+    .day-num { animation: dayGlow 5s ease-in-out infinite; }
+    @keyframes dayGlow {
+      0%,100% { filter: drop-shadow(0 0 8px rgba(138,204,90,0.18)); }
+      50%     { filter: drop-shadow(0 0 16px rgba(138,204,90,0.34)); }
+    }
+
+    /* (10) Scroll-hint — chevron animado de rolagem */
+    .scroll-hint::after {
+      content: '⌄'; display: inline-block; margin-left: 0.35rem;
+      font-size: 1.15em; line-height: 0.4;
+      animation: chevBounce 1.6s ease-in-out infinite;
+    }
+    @keyframes chevBounce {
+      0%,100% { transform: translateY(-1px); opacity: 0.55; }
+      50%     { transform: translateY(2px);  opacity: 1; }
+    }
+
     /* Acessibilidade: respeita quem prefere menos movimento — desliga tilt/float */
     @media (prefers-reduced-motion: reduce) {
       .canvas-wrap, #v-semente .canvas-wrap { animation: none; transform: none !important; }
       .canvas-sheen { display: none; }
       body::after  { animation: none; }
       body::before { transform: none !important; }
+      .logo h1, a.btn-3d, footer::before, .day-num, .scroll-hint::after { animation: none !important; }
+      #readProgress { transition: none; }
     }
   </style>
 </head>
 <body>
+<div id="readProgress"></div>
 <div class="app">
 
   <header>
@@ -940,7 +1013,7 @@
       </aside>
 
     </div>
-    <div class="scroll-hint" id="scrollHint" style="transition:opacity 0.4s">descobrir mais ↓</div>
+    <div class="scroll-hint" id="scrollHint" style="transition:opacity 0.4s">descobrir mais</div>
   </div>
 
   <!-- ── SEÇÃO: MUNDO ──────────────────────────────────────────── -->
@@ -1622,6 +1695,10 @@
     const y=window.scrollY;
     const sh=document.getElementById('scrollHint');
     if(sh) sh.style.opacity=y>80?'0':'1';
+    // Barra de progresso de leitura
+    const rp=document.getElementById('readProgress');
+    if(rp){ const max=document.documentElement.scrollHeight-window.innerHeight;
+      rp.style.width=(max>0?(y/max*100):0).toFixed(2)+'%'; }
     // Fundo deriva ~6% da velocidade do scroll → camada distante (parallax)
     if(!_reduceMo) document.documentElement.style.setProperty('--bg-shift', (-y*0.06).toFixed(1)+'px');
   }
