@@ -57,11 +57,34 @@
     /* Plano de fundo em camadas (frontend-design: "fundos com profundidade") */
     body::before {
       content: '';
-      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      position: fixed; inset: -8% 0; pointer-events: none; z-index: 0;
       background:
         radial-gradient(ellipse 80% 50% at 50% -10%, rgba(92,184,74,0.07) 0%, transparent 60%),
         radial-gradient(ellipse 60% 40% at 80% 90%, rgba(58,110,46,0.04) 0%, transparent 55%),
-        radial-gradient(circle, #2a3a2a 1px, transparent 1px) 0 0 / 28px 28px;
+        radial-gradient(circle, #2a3a2a 1px, transparent 1px) 0 0 / 28px 28px,
+        /* Vinheta cinematográfica — escurece os cantos, foca o centro (percentual: escala em qualquer tela) */
+        radial-gradient(ellipse 75% 80% at 50% 42%, transparent 58%, rgba(0,0,0,0.42) 100%);
+      /* Parallax de profundidade: o fundo deriva devagar no scroll (peachweb/threlte) */
+      transform: translate3d(0, var(--bg-shift, 0px), 0);
+      will-change: transform;
+    }
+
+    /* Camada filmica: grão sutil sobre tudo — textura de material (spline) */
+    body::after {
+      content: '';
+      position: fixed; inset: 0; pointer-events: none; z-index: 3;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 140px 140px;
+      opacity: 0.035;
+      animation: grain 5.4s steps(5) infinite;
+    }
+    @keyframes grain {
+      0%   { background-position:   0   0; }
+      20%  { background-position: -28px  18px; }
+      40%  { background-position:  22px -26px; }
+      60%  { background-position: -18px -14px; }
+      80%  { background-position:  26px  20px; }
+      100% { background-position:   0   0; }
     }
 
     .app {
@@ -360,7 +383,8 @@
       background:
         radial-gradient(ellipse 80% 50% at 50% -10%, rgba(138,90,248,0.08) 0%, transparent 60%),
         radial-gradient(ellipse 60% 40% at 80% 90%, rgba(90,58,174,0.05) 0%, transparent 55%),
-        radial-gradient(circle, #2a243a 1px, transparent 1px) 0 0 / 28px 28px;
+        radial-gradient(circle, #2a243a 1px, transparent 1px) 0 0 / 28px 28px,
+        radial-gradient(ellipse 75% 80% at 50% 42%, transparent 58%, rgba(0,0,0,0.42) 100%);
     }
 
     /* Mood strip — glassmorphism (ui-ux-pro-max) */
@@ -731,6 +755,8 @@
     @media (prefers-reduced-motion: reduce) {
       .canvas-wrap, #v-semente .canvas-wrap { animation: none; transform: none !important; }
       .canvas-sheen { display: none; }
+      body::after  { animation: none; }
+      body::before { transform: none !important; }
     }
   </style>
 </head>
@@ -879,6 +905,7 @@
             <div class="g-item done">  <span class="icon">✓</span><span>Layout hero + scroll</span></div>
             <div class="g-item done">  <span class="icon">✓</span><span>Canvas hero fullscreen</span></div>
             <div class="g-item done">  <span class="icon">✓</span><span>Profundidade 3D · tilt + parallax</span></div>
+            <div class="g-item done">  <span class="icon">✓</span><span>Grão fílmico + vinheta + parallax scroll</span></div>
             <div class="g-item active"><span class="icon">●</span><span>Botão floral · floração (stage 7)</span></div>
           </div>
         </div>
@@ -1579,11 +1606,18 @@
   },{threshold:0.25});
   document.querySelectorAll('.view').forEach(v=>viewObs.observe(v));
 
-  // Oculta scroll hint quando usuário rola
-  window.addEventListener('scroll',()=>{
+  // Oculta scroll hint + parallax de profundidade do fundo (rAF, sem jank)
+  const _reduceMo=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let _scrollRaf=0;
+  function onScroll(){
+    _scrollRaf=0;
+    const y=window.scrollY;
     const sh=document.getElementById('scrollHint');
-    if(sh) sh.style.opacity=window.scrollY>80?'0':'1';
-  },{passive:true});
+    if(sh) sh.style.opacity=y>80?'0':'1';
+    // Fundo deriva ~6% da velocidade do scroll → camada distante (parallax)
+    if(!_reduceMo) document.documentElement.style.setProperty('--bg-shift', (-y*0.06).toFixed(1)+'px');
+  }
+  window.addEventListener('scroll',()=>{ if(!_scrollRaf) _scrollRaf=requestAnimationFrame(onScroll); },{passive:true});
 
   // Inicializa slider na tab ativa
   moveSlider(document.querySelector('.tab.active'));
@@ -1873,7 +1907,8 @@
     s.textContent=`body:not(.theme-roxo)::before{background:`
       +`radial-gradient(ellipse 80% 50% at 50% -10%,${g1} 0%,transparent 60%),`
       +`radial-gradient(ellipse 60% 40% at 80% 90%,${g2} 0%,transparent 55%),`
-      +`radial-gradient(circle,${dot} 1px,transparent 1px) 0 0/28px 28px;}`;
+      +`radial-gradient(circle,${dot} 1px,transparent 1px) 0 0/28px 28px,`
+      +`radial-gradient(ellipse 75% 80% at 50% 42%,transparent 58%,rgba(0,0,0,0.42) 100%);}`;
   }
   updateDynTheme();
   setInterval(updateDynTheme, 60000);
