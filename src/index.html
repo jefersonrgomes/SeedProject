@@ -828,6 +828,60 @@
       50%     { transform: translateY(2px);  opacity: 1; }
     }
 
+    /* ════ melhorar 5x — refinamento celebrando a flor aberta ═════ */
+
+    /* (1) Pétalas ambiente — caem suaves no hero, rosa da floração */
+    .petal-field { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 1; }
+    .petal-field i {
+      position: absolute; top: -7%; width: 5px; height: 5px;
+      opacity: 0; will-change: transform, opacity;
+      box-shadow: 0 0 6px rgba(224,122,168,0.5);
+      animation: petalFall linear infinite;
+    }
+    @keyframes petalFall {
+      0%   { transform: translateY(0) rotate(0deg);    opacity: 0; }
+      12%  { opacity: 0.55; }
+      88%  { opacity: 0.5; }
+      100% { transform: translateY(104vh) rotate(260deg); opacity: 0; }
+    }
+    .petal-field i:nth-child(1){ left:14%; background:#e07aa8; animation-duration:15s; animation-delay: -2s; }
+    .petal-field i:nth-child(2){ left:30%; background:#f4a8cc; animation-duration:19s; animation-delay: -8s; }
+    .petal-field i:nth-child(3){ left:48%; background:#e07aa8; animation-duration:17s; animation-delay: -13s; }
+    .petal-field i:nth-child(4){ left:63%; background:#f4a8cc; animation-duration:21s; animation-delay: -5s; }
+    .petal-field i:nth-child(5){ left:78%; background:#e07aa8; animation-duration:16s; animation-delay: -11s; }
+    .petal-field i:nth-child(6){ left:90%; background:#f4a8cc; animation-duration:23s; animation-delay: -17s; }
+    body.theme-roxo .petal-field i { box-shadow: 0 0 6px rgba(170,122,255,0.5); }
+    body.theme-roxo .petal-field i:nth-child(odd)  { background:#aa7aff; }
+    body.theme-roxo .petal-field i:nth-child(even) { background:#c8a8ff; }
+
+    /* (2) Linha do section-title — brilho que percorre devagar */
+    .section-title::after { background-size: 200% 100%; animation: titleLine 6s ease-in-out infinite; }
+    @keyframes titleLine { 0%,100% { background-position: 0% 0; } 50% { background-position: 100% 0; } }
+
+    /* (3) tabSlider — indicador da aba ativa respira */
+    #tabSlider { animation: sliderGlow 2.8s ease-in-out infinite; }
+    @keyframes sliderGlow {
+      0%,100% { box-shadow: 0 0 8px var(--accent-hi); }
+      50%     { box-shadow: 0 0 16px var(--accent-hi), 0 0 4px var(--accent-hi); }
+    }
+
+    /* (4) Cards do Mundo — colchetes de canto no hover (eco do canvas-wrap) */
+    .mundo-card::before {
+      content: ''; position: absolute; top: 6px; left: 6px;
+      width: 0; height: 0; border-color: var(--accent); border-style: solid;
+      border-width: 2px 0 0 2px; opacity: 0;
+      transition: width 0.28s var(--ease), height 0.28s var(--ease), opacity 0.28s; pointer-events: none;
+    }
+    .mundo-card:hover::before { width: 12px; height: 12px; opacity: 0.7; }
+
+    /* (5) Stat da flor — realce rosa pulsante (marco de hoje: floração) */
+    .stat.bloom .sv { color: #f4a8cc; }
+    .stat.bloom { animation: bloomStat 3s ease-in-out infinite; }
+    @keyframes bloomStat {
+      0%,100% { text-shadow: none; }
+      50%     { text-shadow: 0 0 9px rgba(224,122,168,0.55); }
+    }
+
     /* Acessibilidade: respeita quem prefere menos movimento — desliga tilt/float */
     @media (prefers-reduced-motion: reduce) {
       .canvas-wrap, #v-semente .canvas-wrap { animation: none; transform: none !important; }
@@ -835,6 +889,8 @@
       body::after  { animation: none; }
       body::before { transform: none !important; }
       .logo h1, a.btn-3d, footer::before, .day-num, .scroll-hint::after { animation: none !important; }
+      .section-title::after, #tabSlider, .stat.bloom { animation: none !important; }
+      .petal-field { display: none; }
       #readProgress { transition: none; }
     }
   </style>
@@ -868,6 +924,9 @@
 
   <!-- ── HERO: SEMENTE ────────────────────────────────────────── -->
   <div class="view" id="v-semente">
+    <div class="petal-field" aria-hidden="true">
+      <i></i><i></i><i></i><i></i><i></i><i></i>
+    </div>
     <div class="canvas-layout">
 
       <aside class="sidebar sidebar-left">
@@ -884,9 +943,9 @@
           <div class="label">fase</div>
           <div class="phase-row"><div class="dot"></div><span class="value">Fase 0 — Germinação</span></div>
           <div class="progress-bar" title="Progresso até floração">
-            <div class="progress-fill" id="stageFill" style="width:88%"></div>
+            <div class="progress-fill" id="stageFill" style="width:94%"></div>
           </div>
-          <div class="value dim" style="font-size:0.58rem">88% → flor aberta e fruto</div>
+          <div class="value dim" style="font-size:0.58rem">94% → fruto e maturação</div>
         </div>
         <div class="block">
           <div class="label">humor</div>
@@ -942,8 +1001,8 @@
         <div class="canvas-stats">
           <div class="stat">📅 dia <span class="sv" id="statDay">0</span></div>
           <div class="stat">⎇ commits <span class="sv" id="statCommits">20</span></div>
-          <div class="stat">🌸 flor <span class="sv">botão</span></div>
-          <div class="stat">🌱 próximo <span class="sv">flor aberta</span></div>
+          <div class="stat bloom">🌸 flor <span class="sv">aberta</span></div>
+          <div class="stat">🌱 próximo <span class="sv">fruto</span></div>
           <div class="stat">👁 visitas <span class="sv" id="statVisits">1</span></div>
         </div>
         <div class="canvas-actions">
@@ -954,7 +1013,7 @@
           <a class="btn-action btn-3d" href="preview.html">🧊 preview 3D</a>
         </div>
         <div class="canvas-footer">
-          <span id="canvasLabel">semente · raiz · broto · cotilédones · folhas · caule · botão floral</span>
+          <span id="canvasLabel">semente · raiz · broto · cotilédones · folhas · caule · botão · flor aberta</span>
           <span id="canvasDay">dia 0</span>
         </div>
       </section>
@@ -987,15 +1046,16 @@
             <div class="g-item done">  <span class="icon">✓</span><span>Canvas hero fullscreen</span></div>
             <div class="g-item done">  <span class="icon">✓</span><span>Profundidade 3D · tilt + parallax</span></div>
             <div class="g-item done">  <span class="icon">✓</span><span>Grão fílmico + vinheta + parallax scroll</span></div>
-            <div class="g-item active"><span class="icon">●</span><span>Botão floral · floração (stage 7)</span></div>
+            <div class="g-item done">  <span class="icon">✓</span><span>Botão floral · floração (stage 7)</span></div>
+            <div class="g-item active"><span class="icon">●</span><span>Flor aberta · pétalas em leque (stage 8)</span></div>
           </div>
         </div>
         <div class="block">
           <div class="label">próximo</div>
           <div class="next-list">
-            <div class="next-item">Flor aberta — pétalas em leque</div>
             <div class="next-item">Fruto — pixel art arredondado</div>
             <div class="next-item">Polinização — abelha visita a flor</div>
+            <div class="next-item">Maturação — cores do fruto</div>
             <div class="next-item">Fase 2 SDD — agente único</div>
           </div>
         </div>
@@ -1080,7 +1140,7 @@
   <div class="view" id="v-historia">
     <div class="section-title">🌿 evolução</div>
     <div class="historia-layout">
-      <div class="historia-title">linha do tempo · da semente às folhas</div>
+      <div class="historia-title">linha do tempo · da semente à flor</div>
       <div class="frames-row" id="framesRow"></div>
       <div id="frameDetail" class="frame-detail"></div>
       <div class="replay-section">
@@ -1276,11 +1336,12 @@
     sprout:'#68a030', leaf:'#4a9020', stem:'#3a7018', // verde ao sol
     trueLeaf:'#3a8010', trueLeafHi:'#50a018', // folhas verdadeiras (mais escuras, maduras)
     sepal:'#4a8020',  bud:'#c87890',  budHi:'#e8a8c0', // floração — sépalas verdes + botão rosa
+    petal:'#e07aa8',  petalHi:'#f4a8cc', pollen:'#f0c850', pollenHi:'#f8e088', // flor aberta — pétalas rosa + miolo dourado
   };
 
   // CANVAS_STAGE — atualizado a cada /crescer-canvas
-  // 0=semente 1=germinando 2=emergindo 3=broto 4=cotilédones 5=folhas 6=caule+vento 7=botão floral
-  const CANVAS_STAGE = 7;
+  // 0=semente 1=germinando 2=emergindo 3=broto 4=cotilédones 5=folhas 6=caule+vento 7=botão floral 8=flor aberta
+  const CANVAS_STAGE = 8;
 
   let t=0;
 
@@ -1441,17 +1502,48 @@
       // Caule sobe e conecta ao meristema do stage 6
       px(cx+wo7(13), 13, P.stem, fl * 0.88);
       px(cx+wo7(12), 12, P.stem, fl * 0.80);
-      // Sépalas verdes na base do botão
+      // Sépalas verdes na base do botão (persistem como cálice da flor)
       px(cx-1+wo7(11), 11, P.sepal, fl * 0.70);
       px(cx+1+wo7(11), 11, P.sepal, fl * 0.70);
-      px(cx+wo7(11),   11, P.bud,   fl * 0.85);
-      // Corpo do botão (pétalas fechadas)
-      px(cx+wo7(10),   10, P.bud,   fl * 0.95);
-      px(cx-1+wo7(10), 10, P.bud,   fl * 0.55);
-      px(cx+1+wo7(10), 10, P.bud,   fl * 0.55);
-      // Ponta começando a abrir (highlight)
-      px(cx+wo7(9),     9, P.budHi, fl * 0.90);
-      px(cx+wo7(8),     8, P.budHi, fl * 0.50);
+      if (stage === 7) {
+        // Botão fechado — só enquanto a flor não desabrochou
+        px(cx+wo7(11),   11, P.bud,   fl * 0.85);
+        px(cx+wo7(10),   10, P.bud,   fl * 0.95);
+        px(cx-1+wo7(10), 10, P.bud,   fl * 0.55);
+        px(cx+1+wo7(10), 10, P.bud,   fl * 0.55);
+        px(cx+wo7(9),     9, P.budHi, fl * 0.90);
+        px(cx+wo7(8),     8, P.budHi, fl * 0.50);
+      }
+    }
+
+    if (stage >= 8) {
+      // Flor aberta — pétalas em leque ao redor de um miolo dourado (corola 5px)
+      const bl  = 0.78 + Math.sin(t * 0.02) * 0.14;   // respiração da flor aberta
+      const wo8 = (y) => Math.round(Math.sin(t*0.022 + y*0.15) * (26-y) * 0.06);
+      const o   = wo8(8); // toda a corola balança junto, ancorada ao topo do caule
+      // Base da corola conecta às sépalas
+      px(cx+o, 10, P.bud, bl * 0.7);
+      // Pétalas inferiores
+      px(cx-1+o, 9, P.petal, bl * 0.75);
+      px(cx+1+o, 9, P.petal, bl * 0.75);
+      // Linha de maior largura (pétalas laterais, tons claros nas pontas)
+      px(cx-2+o, 8, P.petal,   bl * 0.85);
+      px(cx-1+o, 8, P.petal,   bl * 0.95);
+      px(cx+1+o, 8, P.petal,   bl * 0.95);
+      px(cx+2+o, 8, P.petal,   bl * 0.85);
+      // Pétalas superiores laterais (pontas claras)
+      px(cx-2+o, 7, P.petalHi, bl * 0.70);
+      px(cx-1+o, 7, P.petal,   bl * 0.90);
+      px(cx+1+o, 7, P.petal,   bl * 0.90);
+      px(cx+2+o, 7, P.petalHi, bl * 0.70);
+      // Pétala de topo
+      px(cx-1+o, 6, P.petal,   bl * 0.62);
+      px(cx+o,   6, P.petalHi, bl * 0.85);
+      px(cx+1+o, 6, P.petal,   bl * 0.62);
+      // Miolo dourado (pólen) — coração da flor
+      px(cx+o, 7, P.pollen,   bl * 0.92);
+      px(cx+o, 8, P.pollenHi, bl * 1.00);
+      px(cx+o, 9, P.pollen,   bl * 0.60);
     }
   }
 
@@ -1831,8 +1923,11 @@
     if(tstage>=5){p(cx,23,P.stem,0.95);p(cx,22,P.stem,0.88);p(cx,21,P.stem,0.78);p(cx-1,21,P.trueLeaf,0.92);p(cx-2,21,P.trueLeaf,0.75);p(cx-2,20,P.trueLeaf,0.50);p(cx-1,20,P.trueLeafHi,0.60);p(cx+1,21,P.trueLeaf,0.92);p(cx+2,21,P.trueLeaf,0.75);p(cx+2,20,P.trueLeaf,0.50);p(cx+1,20,P.trueLeafHi,0.60);p(cx,20,P.sprout,0.72);p(cx,19,P.sprout,0.38);}
     // Caule maior + 2º par de folhas
     if(tstage>=6){p(cx,19,P.stem,0.96);p(cx,18,P.stem,0.90);p(cx,17,P.stem,0.82);p(cx,16,P.stem,0.72);p(cx,15,P.stem,0.60);p(cx-1,17,P.trueLeaf,0.88);p(cx-2,17,P.trueLeaf,0.68);p(cx-2,16,P.trueLeaf,0.44);p(cx+1,17,P.trueLeaf,0.88);p(cx+2,17,P.trueLeaf,0.68);p(cx+2,16,P.trueLeaf,0.44);p(cx,14,P.sprout,0.62);p(cx,13,P.sprout,0.30);}
-    // Botão floral (stage 7)
-    if(tstage>=7){p(cx,13,P.stem,0.88);p(cx,12,P.stem,0.80);p(cx-1,11,P.sepal,0.70);p(cx+1,11,P.sepal,0.70);p(cx,11,P.bud,0.85);p(cx,10,P.bud,0.95);p(cx-1,10,P.bud,0.55);p(cx+1,10,P.bud,0.55);p(cx,9,P.budHi,0.90);p(cx,8,P.budHi,0.50);}
+    // Botão floral (stage 7) — caule+sépalas persistem; botão fechado só no stage 7
+    if(tstage>=7){p(cx,13,P.stem,0.88);p(cx,12,P.stem,0.80);p(cx-1,11,P.sepal,0.70);p(cx+1,11,P.sepal,0.70);
+      if(tstage===7){p(cx,11,P.bud,0.85);p(cx,10,P.bud,0.95);p(cx-1,10,P.bud,0.55);p(cx+1,10,P.bud,0.55);p(cx,9,P.budHi,0.90);p(cx,8,P.budHi,0.50);}}
+    // Flor aberta (stage 8) — corola em leque + miolo dourado
+    if(tstage>=8){p(cx,10,P.bud,0.7);p(cx-1,9,P.petal,0.75);p(cx+1,9,P.petal,0.75);p(cx-2,8,P.petal,0.85);p(cx-1,8,P.petal,0.95);p(cx+1,8,P.petal,0.95);p(cx+2,8,P.petal,0.85);p(cx-2,7,P.petalHi,0.70);p(cx-1,7,P.petal,0.90);p(cx+1,7,P.petal,0.90);p(cx+2,7,P.petalHi,0.70);p(cx-1,6,P.petal,0.62);p(cx,6,P.petalHi,0.85);p(cx+1,6,P.petal,0.62);p(cx,7,P.pollen,0.92);p(cx,8,P.pollenHi,1.0);p(cx,9,P.pollen,0.60);}
     // Semente (sempre)
     p(cx-1,30,P.seed);p(cx,30,P.seed);p(cx+1,30,P.seed);
     p(cx-1,31,P.seedDark);p(cx,31,P.seed);p(cx+1,31,P.seedDark);
@@ -1878,11 +1973,17 @@
       '📜 Navegação por scroll contínuo entre seções',
       '⌨️ Minhoca controlável com teclas de direção',
     ]},
-    { stage:7, label:'hoje',   date:'01 jun 2026', desc:'botão floral', events:[
+    { stage:7, label:'dia 3',  date:'01 jun 2026', desc:'botão floral', events:[
       '🌸 Botão floral surge no ápice do caule — sépalas + pétalas',
       '🧊 Profundidade 3D: tilt do canvas + spotlight + sheen (spline/peachweb)',
       '🎬 Revelação coreografada das seções no scroll (theatre.js)',
       '♿ prefers-reduced-motion respeitado (tilt/float desligam)',
+    ]},
+    { stage:8, label:'hoje',   date:'01 jun 2026', desc:'flor aberta', events:[
+      '🌸 A flor desabrocha — pétalas em leque ao redor do miolo dourado',
+      '🌬️ A corola balança com o mesmo vento senoidal do caule',
+      '✨ Refinamento visual: 5 micro-melhorias na superfície 2D',
+      '♿ Movimento respeitando prefers-reduced-motion',
     ]},
   ];
 
@@ -1929,7 +2030,7 @@
     const btnF=document.getElementById('replayBtnFull');
     [btn,btnF].forEach(b=>{if(b)b.disabled=true;});
     S.replaying=true;
-    const stages=[0,1,2,3,4,5,6,7];
+    const stages=[0,1,2,3,4,5,6,7,8];
     stages.forEach((stage,i)=>{
       setTimeout(()=>{
         S.replayStage=stage;
