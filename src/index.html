@@ -171,7 +171,10 @@
     /* ── Hero: canvas preenche a 1ª sessão completa ─────────── */
     #v-semente {
       position: relative;
-      background: radial-gradient(ellipse 75% 60% at 50% 42%, var(--glow-g), transparent 64%);
+      /* Spotlight cinematográfico segue o cursor (peachweb) sobre brilho base */
+      background:
+        radial-gradient(ellipse 52% 40% at var(--mx, 50%) var(--my, 40%), var(--glow-g), transparent 56%),
+        radial-gradient(ellipse 75% 60% at 50% 42%, var(--glow-g), transparent 64%);
     }
     .scroll-hint {
       position: absolute; bottom: 0.9rem; left: 50%;
@@ -202,6 +205,7 @@
       display: flex; flex-direction: column;
       align-items: center; justify-content: flex-start;
       gap: 0.5rem; padding: 0.55rem 0 0.4rem;
+      perspective: 1400px; /* câmera para o tilt 3D (spline/threlte) */
     }
     /* Canvas: min da altura disponível vs largura — sempre quadrado */
     #v-semente canvas {
@@ -213,6 +217,9 @@
     #v-semente .canvas-wrap {
       animation: aura-breath 7s ease-in-out infinite;
       border: 1px solid var(--border);
+      transition: transform 0.3s var(--ease); /* retorno suave do tilt */
+      transform-style: preserve-3d;
+      will-change: transform;
     }
     #v-semente .canvas-wrap:hover {
       animation: aura-breath-hover 4s ease-in-out infinite;
@@ -403,6 +410,16 @@
     .canvas-wrap:hover::before,
     .canvas-wrap:hover::after { width: 22px; height: 22px; border-color: var(--accent-hi); }
     canvas { display: block; image-rendering: pixelated; image-rendering: crisp-edges; }
+
+    /* Sheen — brilho especular que segue o cursor/tilt (spline: material com luz) */
+    .canvas-sheen {
+      position: absolute; inset: 0; pointer-events: none; z-index: 2;
+      background: radial-gradient(circle 38% at var(--sx, 50%) var(--sy, 50%),
+                  rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 30%, transparent 60%);
+      mix-blend-mode: screen;
+      opacity: 0; transition: opacity 0.35s var(--ease);
+    }
+    #v-semente .canvas-wrap:hover .canvas-sheen { opacity: 1; }
 
     /* Stats bar */
     .canvas-stats {
@@ -709,6 +726,12 @@
       .app { padding: 0 1rem; }
       .tab { padding: 0.5rem 0.8rem; font-size: 0.65rem; }
     }
+
+    /* Acessibilidade: respeita quem prefere menos movimento — desliga tilt/float */
+    @media (prefers-reduced-motion: reduce) {
+      .canvas-wrap, #v-semente .canvas-wrap { animation: none; transform: none !important; }
+      .canvas-sheen { display: none; }
+    }
   </style>
 </head>
 <body>
@@ -807,6 +830,7 @@
       <section class="stage">
         <div class="canvas-wrap" id="canvasWrap">
           <canvas id="c"></canvas>
+          <div class="canvas-sheen" id="canvasSheen"></div>
           <div class="worm-hint">↑↓←→ minhoca</div>
         </div>
         <div class="canvas-stats">
@@ -853,7 +877,8 @@
             <div class="g-item done">  <span class="icon">✓</span><span>Caule maior + vento animado</span></div>
             <div class="g-item done">  <span class="icon">✓</span><span>Abelha voando no canvas</span></div>
             <div class="g-item done">  <span class="icon">✓</span><span>Layout hero + scroll</span></div>
-            <div class="g-item active"><span class="icon">●</span><span>Canvas hero fullscreen</span></div>
+            <div class="g-item done">  <span class="icon">✓</span><span>Canvas hero fullscreen</span></div>
+            <div class="g-item active"><span class="icon">●</span><span>Profundidade 3D · tilt + parallax</span></div>
           </div>
         </div>
         <div class="block">
@@ -1414,6 +1439,38 @@
   // ── Interações canvas ─────────────────────────────────────────
   canvas.addEventListener('click', ()=>{ S.clickPulse=1.0; });
 
+  // ── Profundidade 3D + spotlight (inspirado em spline/threlte/peachweb) ──
+  // Tilt do canvas e brilho ambiente seguem o cursor. Sem libs — só transform/CSS vars.
+  (function(){
+    const hero=document.getElementById('v-semente');
+    const wrap=document.getElementById('canvasWrap');
+    const sheen=document.getElementById('canvasSheen');
+    if(!hero||!wrap) return;
+    const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let raf=0, rx=0, ry=0;
+    const apply=()=>{ raf=0; wrap.style.transform=`rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg)`; };
+    hero.addEventListener('pointermove', e=>{
+      const hr=hero.getBoundingClientRect();
+      // Spotlight ambiente segue o cursor (peachweb cinematic)
+      hero.style.setProperty('--mx', (((e.clientX-hr.left)/hr.width)*100).toFixed(1)+'%');
+      hero.style.setProperty('--my', (((e.clientY-hr.top)/hr.height)*100).toFixed(1)+'%');
+      if(reduce) return;
+      // Tilt 3D do canvas + posição do sheen (spline depth)
+      const wr=wrap.getBoundingClientRect();
+      const cx=(e.clientX-wr.left)/wr.width-0.5;
+      const cy=(e.clientY-wr.top)/wr.height-0.5;
+      rx=cy*-6; ry=cx*6;
+      sheen.style.setProperty('--sx', ((cx+0.5)*100).toFixed(1)+'%');
+      sheen.style.setProperty('--sy', ((cy+0.5)*100).toFixed(1)+'%');
+      if(!raf) raf=requestAnimationFrame(apply);
+    }, {passive:true});
+    hero.addEventListener('pointerleave', ()=>{
+      wrap.style.transform='';
+      hero.style.removeProperty('--mx');
+      hero.style.removeProperty('--my');
+    });
+  })();
+
   // Inicializa comida no solo
   for(let i=0;i<5;i++) spawnFood();
 
@@ -1488,6 +1545,11 @@
       document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
       const at=document.querySelector(`.tab[data-view="${vid}"]`);
       if(at){at.classList.add('active');moveSlider(at);}
+      // Revelação coreografada do título da seção (theatre.js: entrada sequenciada)
+      if(vid!=='semente'){
+        const st=e.target.querySelector('.section-title');
+        if(st) _animate(st,{opacity:[0,1],y:[14,0],letterSpacing:['0.5em','0.3em']},{duration:0.5,ease:[0.4,0,0.2,1]});
+      }
       if(vid==='mundo') _animate('.mundo-card',{opacity:[0,1],y:[10,0]},{duration:0.35,delay:_stagger(0.06),ease:[0.4,0,0.2,1]});
       if(vid==='chat')    initChat();
       if(vid==='historia') initHistoria();
