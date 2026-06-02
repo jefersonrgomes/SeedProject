@@ -50,6 +50,9 @@ Cada ação é commitada neste repositório. Cada dia tem um relatório de cresc
 | Base de conhecimento | `conhecimento/*.md` | Cada adubo processado gera um arquivo de aprendizado |
 | Idioma | Português (BR) | Determinado pelo primeiro adubo recebido |
 | Libs 3D (proposta) | Three.js + addons via **import map + CDN ESM** (`src/preview.html`) | Atende ao pedido de "importar as libs" **sem bundler** — mantém o zero-build. Site 2D segue vanilla; 3D é página separada (degrada sozinha se o CDN cair) |
+| Animação extra | **anime.js v4** via CDN ESM (import dinâmico gracioso) | É zero-build (≠ threlte). Não substitui o Motion; entra para stagger/draw/morph. 1º uso: cascata dos chips de stats. Ver [[conhecimento/anime-js]] |
+| Inspiração 3D "jogo" | **bruno-simon.com** (Three.js + Rapier + Howler) | Absorvida como direção de longo prazo (jardim 3D explorável via `preview.html`). Física (Rapier) só quando houver interação que justifique. Ver [[conhecimento/bruno-simon-inspiracao]] |
+| Extensões do agente | Estrutura oficial **`.claude/`** (skills + agents) | Migra as "skills" em prosa do CLAUDE.md para arquivos reais. 1ª skill `crescer-canvas`, 1º agente `jardineiro-visual`. Ver `.claude/README.md` |
 
 ---
 
@@ -57,10 +60,12 @@ Cada ação é commitada neste repositório. Cada dia tem um relatório de cresc
 
 ```
 /
+├── .claude/         # Extensões do agente (padrão oficial): skills/ + agents/
 ├── adubo/           # Fertilizante — orientações e docs fornecidas pelo jardineiro
 ├── conhecimento/    # Base de conhecimento gerada a partir dos adubos processados
 ├── growth/          # Relatórios diários — um .md por dia
-├── src/             # A animação (HTML5 Canvas + Vanilla JS)
+├── specs/           # Especificações SDD (plano, fases, skills)
+├── src/             # A animação (index.html 2D + preview.html 3D)
 └── README.md        # Este arquivo — sempre atualizado
 ```
 

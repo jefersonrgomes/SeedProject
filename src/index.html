@@ -882,6 +882,64 @@
       50%     { text-shadow: 0 0 9px rgba(224,122,168,0.55); }
     }
 
+    /* ════ melhorar 10x — dia 5 · polimento (maior parte em hover/load) ═══ */
+
+    /* (1) Stat chips entram em cascata (anime.js, no load) — ver bloco JS no final */
+    /* (2) Nav sticky ganha profundidade: sombra de elevação sob o conteúdo */
+    nav { box-shadow: 0 8px 22px -16px rgba(0,0,0,0.7); }
+
+    /* (3) Card do Mundo — título ganha sublinhado que cresce no hover */
+    .mundo-card .card-title { position: relative; }
+    .mundo-card .card-title::after {
+      content: ''; position: absolute; left: -0.55rem; bottom: -1px; height: 1px; width: 0;
+      background: linear-gradient(90deg, var(--accent-hi), transparent);
+      transition: width 0.32s var(--ease);
+    }
+    .mundo-card:hover .card-title::after { width: 60%; }
+
+    /* (4) Frame atual (Evolução) — respiração suave do thumbnail */
+    .frame.current .frame-canvas { animation: frameBreath 4.5s ease-in-out infinite; }
+    @keyframes frameBreath {
+      0%,100% { box-shadow: 0 0 18px rgba(92,184,74,0.14); }
+      50%     { box-shadow: 0 0 30px rgba(92,184,74,0.30); }
+    }
+
+    /* (5) Stack-item — realce de fundo + deslize no hover */
+    .stack-item { padding-top: 1px; padding-bottom: 1px; }
+    .stack-item:hover { background: rgba(92,184,74,0.06); transform: translateX(3px); }
+
+    /* (6) Botões de ação — glow radial interno no hover */
+    .btn-action { position: relative; overflow: hidden; }
+    .btn-action::after {
+      content: ''; position: absolute; inset: 0; opacity: 0; pointer-events: none;
+      background: radial-gradient(circle at 50% 120%, var(--glow-g), transparent 70%);
+      transition: opacity 0.25s var(--ease);
+    }
+    .btn-action:hover::after { opacity: 1; }
+
+    /* (7) Links (repo + rodapé) — sublinhado animado no hover (não conflita com os ícones ::before/::after) */
+    .gh-link, footer a {
+      background-image: linear-gradient(var(--accent-hi), var(--accent-hi));
+      background-size: 0% 1px; background-position: 0 100%; background-repeat: no-repeat;
+      transition: background-size 0.3s var(--ease), color 0.2s, letter-spacing 0.2s;
+    }
+    .gh-link:hover, footer a:hover { background-size: 100% 1px; }
+
+    /* (8) Mood-strip — halo de borda no hover */
+    .mood-strip { transition: box-shadow 0.3s var(--ease), border-color 0.3s; }
+    .mood-strip:hover { border-color: var(--accent); box-shadow: 0 0 18px var(--glow-g); }
+
+    /* (9) Chip de marco — agora veste a cor do fruto maduro */
+    .stat.bloom .sv { color: #e86a6a; }
+    @keyframes bloomStat {
+      0%,100% { text-shadow: none; }
+      50%     { text-shadow: 0 0 9px rgba(232,106,106,0.55); }
+    }
+
+    /* (10) Botões de replay — brilho de borda no hover */
+    .btn-replay { transition: background 0.2s, color 0.2s, transform 0.15s, box-shadow 0.25s, border-color 0.25s; }
+    .btn-replay:hover { border-color: var(--accent); box-shadow: 0 0 16px var(--glow-g); }
+
     /* Acessibilidade: respeita quem prefere menos movimento — desliga tilt/float */
     @media (prefers-reduced-motion: reduce) {
       .canvas-wrap, #v-semente .canvas-wrap { animation: none; transform: none !important; }
@@ -890,6 +948,7 @@
       body::before { transform: none !important; }
       .logo h1, a.btn-3d, footer::before, .day-num, .scroll-hint::after { animation: none !important; }
       .section-title::after, #tabSlider, .stat.bloom { animation: none !important; }
+      .frame.current .frame-canvas { animation: none !important; }
       .petal-field { display: none; }
       #readProgress { transition: none; }
     }
@@ -943,9 +1002,9 @@
           <div class="label">fase</div>
           <div class="phase-row"><div class="dot"></div><span class="value">Fase 0 — Germinação</span></div>
           <div class="progress-bar" title="Progresso até floração">
-            <div class="progress-fill" id="stageFill" style="width:94%"></div>
+            <div class="progress-fill" id="stageFill" style="width:98%"></div>
           </div>
-          <div class="value dim" style="font-size:0.58rem">94% → fruto e maturação</div>
+          <div class="value dim" style="font-size:0.58rem">98% → ciclo completo · nova semente</div>
         </div>
         <div class="block">
           <div class="label">humor</div>
@@ -1001,8 +1060,8 @@
         <div class="canvas-stats">
           <div class="stat">📅 dia <span class="sv" id="statDay">0</span></div>
           <div class="stat">⎇ commits <span class="sv" id="statCommits">20</span></div>
-          <div class="stat bloom">🌸 flor <span class="sv">aberta</span></div>
-          <div class="stat">🌱 próximo <span class="sv">fruto</span></div>
+          <div class="stat bloom">🍒 fruto <span class="sv">maduro</span></div>
+          <div class="stat">🌱 próximo <span class="sv">semente nova</span></div>
           <div class="stat">👁 visitas <span class="sv" id="statVisits">1</span></div>
         </div>
         <div class="canvas-actions">
@@ -1013,7 +1072,7 @@
           <a class="btn-action btn-3d" href="preview.html">🧊 preview 3D</a>
         </div>
         <div class="canvas-footer">
-          <span id="canvasLabel">semente · raiz · broto · cotilédones · folhas · caule · botão · flor aberta</span>
+          <span id="canvasLabel">semente · raiz · broto · cotilédones · folhas · caule · botão · flor · fruto</span>
           <span id="canvasDay">dia 0</span>
         </div>
       </section>
@@ -1047,15 +1106,16 @@
             <div class="g-item done">  <span class="icon">✓</span><span>Profundidade 3D · tilt + parallax</span></div>
             <div class="g-item done">  <span class="icon">✓</span><span>Grão fílmico + vinheta + parallax scroll</span></div>
             <div class="g-item done">  <span class="icon">✓</span><span>Botão floral · floração (stage 7)</span></div>
-            <div class="g-item active"><span class="icon">●</span><span>Flor aberta · pétalas em leque (stage 8)</span></div>
+            <div class="g-item done">  <span class="icon">✓</span><span>Flor aberta · pétalas em leque (stage 8)</span></div>
+            <div class="g-item active"><span class="icon">●</span><span>Fruto · baga madura (stage 9)</span></div>
           </div>
         </div>
         <div class="block">
           <div class="label">próximo</div>
           <div class="next-list">
-            <div class="next-item">Fruto — pixel art arredondado</div>
+            <div class="next-item">Nova semente — o ciclo recomeça</div>
             <div class="next-item">Polinização — abelha visita a flor</div>
-            <div class="next-item">Maturação — cores do fruto</div>
+            <div class="next-item">Jardim 3D explorável (preview.html)</div>
             <div class="next-item">Fase 2 SDD — agente único</div>
           </div>
         </div>
@@ -1337,11 +1397,12 @@
     trueLeaf:'#3a8010', trueLeafHi:'#50a018', // folhas verdadeiras (mais escuras, maduras)
     sepal:'#4a8020',  bud:'#c87890',  budHi:'#e8a8c0', // floração — sépalas verdes + botão rosa
     petal:'#e07aa8',  petalHi:'#f4a8cc', pollen:'#f0c850', pollenHi:'#f8e088', // flor aberta — pétalas rosa + miolo dourado
+    fruit:'#c83a4a',  fruitHi:'#e86a6a', fruitDark:'#8a2030', // fruto — baga vermelha madura
   };
 
   // CANVAS_STAGE — atualizado a cada /crescer-canvas
-  // 0=semente 1=germinando 2=emergindo 3=broto 4=cotilédones 5=folhas 6=caule+vento 7=botão floral 8=flor aberta
-  const CANVAS_STAGE = 8;
+  // 0=semente 1=germinando 2=emergindo 3=broto 4=cotilédones 5=folhas 6=caule+vento 7=botão floral 8=flor aberta 9=fruto
+  const CANVAS_STAGE = 9;
 
   let t=0;
 
@@ -1518,7 +1579,8 @@
 
     if (stage >= 8) {
       // Flor aberta — pétalas em leque ao redor de um miolo dourado (corola 5px)
-      const bl  = 0.78 + Math.sin(t * 0.02) * 0.14;   // respiração da flor aberta
+      // No stage 9+ a corola murcha (fade) cedendo lugar ao fruto.
+      const bl  = (0.78 + Math.sin(t * 0.02) * 0.14) * (stage >= 9 ? 0.30 : 1);
       const wo8 = (y) => Math.round(Math.sin(t*0.022 + y*0.15) * (26-y) * 0.06);
       const o   = wo8(8); // toda a corola balança junto, ancorada ao topo do caule
       // Base da corola conecta às sépalas
@@ -1544,6 +1606,23 @@
       px(cx+o, 7, P.pollen,   bl * 0.92);
       px(cx+o, 8, P.pollenHi, bl * 1.00);
       px(cx+o, 9, P.pollen,   bl * 0.60);
+    }
+
+    if (stage >= 9) {
+      // Frutificação — o ovário engrossa numa baga vermelha sob o cálice
+      const fr  = 0.82 + Math.sin(t * 0.018) * 0.10;  // maturação lenta
+      const wo9 = (y) => Math.round(Math.sin(t*0.022 + y*0.15) * (26-y) * 0.06);
+      const o   = wo9(10);
+      // Cálice — resto verde das sépalas no topo do fruto
+      px(cx+o, 8, P.sepal, fr * 0.55);
+      // Corpo do fruto — baga arredondada com brilho e sombra
+      px(cx+o,    9, P.fruitHi,   fr * 0.95);  // brilho superior
+      px(cx-1+o,  9, P.fruit,     fr * 0.78);
+      px(cx+1+o,  9, P.fruit,     fr * 0.78);
+      px(cx-1+o, 10, P.fruit,     fr * 0.95);
+      px(cx+o,   10, P.fruit,     fr * 1.00);
+      px(cx+1+o, 10, P.fruit,     fr * 0.90);
+      px(cx+o,   11, P.fruitDark, fr * 0.85);  // sombra inferior
     }
   }
 
@@ -1926,8 +2005,10 @@
     // Botão floral (stage 7) — caule+sépalas persistem; botão fechado só no stage 7
     if(tstage>=7){p(cx,13,P.stem,0.88);p(cx,12,P.stem,0.80);p(cx-1,11,P.sepal,0.70);p(cx+1,11,P.sepal,0.70);
       if(tstage===7){p(cx,11,P.bud,0.85);p(cx,10,P.bud,0.95);p(cx-1,10,P.bud,0.55);p(cx+1,10,P.bud,0.55);p(cx,9,P.budHi,0.90);p(cx,8,P.budHi,0.50);}}
-    // Flor aberta (stage 8) — corola em leque + miolo dourado
-    if(tstage>=8){p(cx,10,P.bud,0.7);p(cx-1,9,P.petal,0.75);p(cx+1,9,P.petal,0.75);p(cx-2,8,P.petal,0.85);p(cx-1,8,P.petal,0.95);p(cx+1,8,P.petal,0.95);p(cx+2,8,P.petal,0.85);p(cx-2,7,P.petalHi,0.70);p(cx-1,7,P.petal,0.90);p(cx+1,7,P.petal,0.90);p(cx+2,7,P.petalHi,0.70);p(cx-1,6,P.petal,0.62);p(cx,6,P.petalHi,0.85);p(cx+1,6,P.petal,0.62);p(cx,7,P.pollen,0.92);p(cx,8,P.pollenHi,1.0);p(cx,9,P.pollen,0.60);}
+    // Flor aberta (stage 8) — corola em leque + miolo dourado (só no thumbnail do stage 8)
+    if(tstage===8){p(cx,10,P.bud,0.7);p(cx-1,9,P.petal,0.75);p(cx+1,9,P.petal,0.75);p(cx-2,8,P.petal,0.85);p(cx-1,8,P.petal,0.95);p(cx+1,8,P.petal,0.95);p(cx+2,8,P.petal,0.85);p(cx-2,7,P.petalHi,0.70);p(cx-1,7,P.petal,0.90);p(cx+1,7,P.petal,0.90);p(cx+2,7,P.petalHi,0.70);p(cx-1,6,P.petal,0.62);p(cx,6,P.petalHi,0.85);p(cx+1,6,P.petal,0.62);p(cx,7,P.pollen,0.92);p(cx,8,P.pollenHi,1.0);p(cx,9,P.pollen,0.60);}
+    // Fruto (stage 9) — baga vermelha sob o cálice + pétalas murchas
+    if(tstage>=9){p(cx-2,7,P.petal,0.25);p(cx+2,7,P.petal,0.25);p(cx-1,6,P.petalHi,0.20);p(cx+1,6,P.petalHi,0.20);p(cx,8,P.sepal,0.55);p(cx,9,P.fruitHi,0.95);p(cx-1,9,P.fruit,0.78);p(cx+1,9,P.fruit,0.78);p(cx-1,10,P.fruit,0.95);p(cx,10,P.fruit,1.0);p(cx+1,10,P.fruit,0.90);p(cx,11,P.fruitDark,0.85);}
     // Semente (sempre)
     p(cx-1,30,P.seed);p(cx,30,P.seed);p(cx+1,30,P.seed);
     p(cx-1,31,P.seedDark);p(cx,31,P.seed);p(cx+1,31,P.seedDark);
@@ -1979,11 +2060,17 @@
       '🎬 Revelação coreografada das seções no scroll (theatre.js)',
       '♿ prefers-reduced-motion respeitado (tilt/float desligam)',
     ]},
-    { stage:8, label:'hoje',   date:'01 jun 2026', desc:'flor aberta', events:[
+    { stage:8, label:'dia 4',  date:'01 jun 2026', desc:'flor aberta', events:[
       '🌸 A flor desabrocha — pétalas em leque ao redor do miolo dourado',
       '🌬️ A corola balança com o mesmo vento senoidal do caule',
       '✨ Refinamento visual: 5 micro-melhorias na superfície 2D',
       '♿ Movimento respeitando prefers-reduced-motion',
+    ]},
+    { stage:9, label:'hoje',   date:'02 jun 2026', desc:'fruto', events:[
+      '🍒 A flor murcha e o ovário engrossa numa baga vermelha madura',
+      '📚 Conhecimento: anime.js (lib) + bruno-simon.com (inspiração 3D)',
+      '🤖 Estrutura .claude/ oficial: 1ª skill (crescer-canvas) + 1º agente (jardineiro-visual)',
+      '✨ Refinamento visual: 10 micro-melhorias (melhorar 10x) + anime.js',
     ]},
   ];
 
@@ -2030,7 +2117,7 @@
     const btnF=document.getElementById('replayBtnFull');
     [btn,btnF].forEach(b=>{if(b)b.disabled=true;});
     S.replaying=true;
-    const stages=[0,1,2,3,4,5,6,7,8];
+    const stages=[0,1,2,3,4,5,6,7,8,9];
     stages.forEach((stage,i)=>{
       setTimeout(()=>{
         S.replayStage=stage;
@@ -2216,6 +2303,23 @@
     a('footer',{opacity:[0,1]},{duration:0.4,delay:0.55,ease:E});
     if(day>0) a(0,day,{duration:1.5,ease:E,delay:0.4,onUpdate:v=>{dayEl.textContent=String(Math.round(v)).padStart(2,'0');}});
   }).catch(()=>{ /* CSS fallback já garante visibilidade */ });
+
+  // ── anime.js — import dinâmico gracioso (referência do adubo dia 5) ──────
+  // Primeiro contato: cascata (stagger) nos chips de stats no load.
+  // Degrada sozinho: os chips não têm opacity:0 no CSS, então seguem visíveis.
+  const _reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!_reduceMotion) {
+    import('https://cdn.jsdelivr.net/npm/animejs@4/+esm').then((Anime)=>{
+      const animate = Anime.animate || (Anime.default && Anime.default.animate);
+      const stagger = Anime.stagger || (Anime.default && Anime.default.stagger);
+      if (!animate || !stagger) return;
+      animate('#v-semente .canvas-stats .stat', {
+        opacity: [0, 1], scale: [0.82, 1],
+        delay: stagger(60, { start: 280 }),
+        duration: 520, ease: 'outCubic',
+      });
+    }).catch(()=>{ /* sem anime.js: chips já visíveis */ });
+  }
 </script>
 </body>
 </html>

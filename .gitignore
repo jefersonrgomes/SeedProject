@@ -2,7 +2,9 @@
 Thumbs.db
 *.log
 node_modules/
-.claude/
+# .claude/ — skills e agents são versionados (config do projeto);
+# só as configurações locais/pessoais ficam de fora
+.claude/settings.local.json
 .vscode/
 # Obsidian — arquivos locais de sessão (manter app.json e graph.json)
 .obsidian/workspace.json
