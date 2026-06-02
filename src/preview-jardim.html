@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Projeto Semente · Jardim 3D explorável</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    /* Mesma linguagem visual do site 2D + preview.html (paleta + tipografia) */
+    :root{
+      --bg:#0e160e; --s1:#172217; --border:#304830; --border-d:#1e2e1e;
+      --accent:#5cb84a; --accent-hi:#8acc5a; --gold:#e0c468;
+      --text:#9ab49a; --text-dim:#5c7a5c; --text-hi:#c8e0c8;
+      --font:'JetBrains Mono', monospace;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html,body{height:100%;}
+    body{font-family:var(--font); background:var(--bg); color:var(--text); overflow:hidden; position:relative;}
+    #scene{position:fixed; inset:0; display:block; z-index:0;}
+
+    /* Atmosfera — vinheta + grão fílmico (fiel ao preview.html) */
+    .cine{position:fixed; inset:0; pointer-events:none; z-index:2;}
+    .cine.vignette{background:radial-gradient(ellipse 78% 82% at 50% 46%, transparent 54%, rgba(0,0,0,0.55) 100%);}
+    .cine.grain{
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size:140px 140px; opacity:0.04; animation:grain 5.4s steps(5) infinite;
+    }
+    @keyframes grain{
+      0%{background-position:0 0;}20%{background-position:-28px 18px;}
+      40%{background-position:22px -26px;}60%{background-position:-18px -14px;}
+      80%{background-position:26px 20px;}100%{background-position:0 0;}
+    }
+
+    /* HUD */
+    .hud{position:fixed; z-index:3; pointer-events:none;}
+    .hud a, .hud button{pointer-events:auto;}
+    .hud-tl{top:1.4rem; left:1.6rem;}
+    .hud-tr{top:1.4rem; right:1.6rem; text-align:right;}
+    .hud-bl{bottom:1.4rem; left:1.6rem;}
+    .hud-br{bottom:1.4rem; right:1.6rem; text-align:right;}
+    .title{
+      font-size:0.8rem; font-weight:700; letter-spacing:0.22em; text-transform:uppercase;
+      background:linear-gradient(135deg, var(--text-hi) 0%, var(--accent-hi) 100%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    }
+    .subtitle{font-size:0.6rem; color:var(--text-dim); letter-spacing:0.14em; margin-top:0.35rem;}
+    .badge3d{
+      display:inline-block; margin-top:0.6rem; font-size:0.55rem; letter-spacing:0.18em;
+      text-transform:uppercase; color:var(--accent-hi);
+      border:1px solid var(--border); background:rgba(92,184,74,0.06); padding:3px 9px;
+    }
+    .back{
+      display:inline-flex; align-items:center; gap:0.4rem; text-decoration:none;
+      font-size:0.66rem; letter-spacing:0.1em; color:var(--text-dim);
+      border:1px solid var(--border); background:rgba(14,22,14,0.55);
+      backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+      padding:7px 13px; transition:color 0.2s, border-color 0.2s, background 0.2s;
+    }
+    .back:hover{color:var(--accent-hi); border-color:var(--accent); background:rgba(92,184,74,0.1);}
+    .layers{
+      font-size:0.56rem; letter-spacing:0.06em; line-height:1.9; color:var(--text-dim);
+      background:rgba(14,22,14,0.5); border:1px solid var(--border-d);
+      backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+      padding:0.7rem 0.9rem; max-width:240px;
+    }
+    .layers b{color:var(--text-hi); font-weight:700; letter-spacing:0.14em; display:block; margin-bottom:0.35rem; font-size:0.54rem; text-transform:uppercase;}
+    .layers .ly{display:flex; gap:0.5rem;}
+    .layers .ly .n{color:var(--accent-hi); flex-shrink:0;}
+    .hint{font-size:0.58rem; color:var(--text-dim); letter-spacing:0.14em;}
+    .credit{font-size:0.5rem; color:var(--text-dim); letter-spacing:0.08em; margin-top:0.5rem; opacity:0.8;}
+
+    /* Loading + erro */
+    .overlay{
+      position:fixed; inset:0; z-index:5; display:flex; flex-direction:column;
+      align-items:center; justify-content:center; gap:1rem; text-align:center;
+      background:var(--bg); transition:opacity 0.6s; padding:2rem;
+    }
+    .overlay.hide{opacity:0; pointer-events:none;}
+    .spin{width:42px; height:42px; border:2px solid var(--border); border-top-color:var(--accent-hi); border-radius:50%; animation:spin 0.9s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .ov-txt{font-size:0.66rem; letter-spacing:0.16em; color:var(--text-dim); text-transform:uppercase;}
+    #err{display:none;}
+    #err .ov-txt{color:var(--text); max-width:420px; line-height:1.8;}
+
+    @media (max-width:620px){
+      .layers{display:none;}
+      .hud-tl{left:1rem; top:1rem;} .hud-tr{right:1rem; top:1rem;} .hud-br{right:1rem; bottom:1rem;}
+    }
+    @media (prefers-reduced-motion: reduce){ .cine.grain{animation:none;} }
+  </style>
+
+  <!-- Import map: Three.js + addons via CDN ESM — zero build, fiel ao preview.html -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <canvas id="scene"></canvas>
+
+  <div class="cine vignette"></div>
+  <div class="cine grain"></div>
+
+  <div class="hud hud-tl">
+    <div class="title">Projeto Semente</div>
+    <div class="subtitle">jardim 3D explorável — modelos glTF reais</div>
+    <span class="badge3d">three.js r160 · GLTFLoader · OrbitControls</span>
+  </div>
+
+  <div class="hud hud-tr">
+    <a class="back" href="preview.html">← proposta 3D (broto)</a>
+  </div>
+
+  <div class="hud hud-bl">
+    <div class="layers">
+      <b>Ponto 2 do gap — assets glTF</b>
+      <div class="ly"><span class="n">✓</span><span>Pipeline de download direto (CC0) provado</span></div>
+      <div class="ly"><span class="n">✓</span><span>GLTFLoader + normalização por bounding box</span></div>
+      <div class="ly"><span class="n">✓</span><span>OrbitControls — caminhe pelo jardim</span></div>
+      <div class="ly"><span class="n">✓</span><span>Mesma atmosfera: fog, bloom, vinheta, grão</span></div>
+      <div class="credit">Modelos: Quaternius (CC0) via Poly Pizza</div>
+    </div>
+  </div>
+
+  <div class="hud hud-br">
+    <div class="hint">arraste p/ orbitar · scroll p/ zoom · botão direito p/ deslocar</div>
+  </div>
+
+  <div class="overlay" id="loading">
+    <div class="spin"></div>
+    <div class="ov-txt" id="ov-txt">carregando o jardim 3D…</div>
+  </div>
+  <div class="overlay hide" id="err">
+    <div class="ov-txt">
+      Não foi possível carregar o jardim 3D.<br>
+      Talvez o navegador não suporte WebGL ou o CDN/asset esteja indisponível.<br><br>
+      <a class="back" href="index.html">← voltar ao site 2D</a>
+    </div>
+  </div>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+    import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+    import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+    import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    try {
+      const canvas = document.getElementById('scene');
+      const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.05;
+
+      const scene = new THREE.Scene();
+      scene.fog = new THREE.FogExp2(0x0a120a, 0.045);
+
+      const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 200);
+      camera.position.set(0, 3.2, 9);
+
+      // ── Controles de exploração ───────────────────────────
+      const controls = new OrbitControls(camera, renderer.domElement);
+      controls.target.set(0, 1.0, 0);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.06;
+      controls.minDistance = 3;
+      controls.maxDistance = 26;
+      controls.maxPolarAngle = Math.PI/2.05; // não atravessa o chão
+      controls.autoRotate = !reduce;
+      controls.autoRotateSpeed = 0.5;
+
+      // ── Luzes (fiéis ao preview.html) ─────────────────────
+      scene.add(new THREE.HemisphereLight(0x9fc46a, 0x21331f, 0.55));
+      scene.add(new THREE.AmbientLight(0x21331f, 0.5));
+      const key = new THREE.DirectionalLight(0xfff0d0, 1.25);
+      key.position.set(5, 9, 4); scene.add(key);
+      const warm = new THREE.PointLight(0xffcf70, 30, 22, 2);
+      warm.position.set(3, 3.5, 2); scene.add(warm);
+      const rim = new THREE.PointLight(0x3a6ed0, 16, 24, 2);
+      rim.position.set(-5, 3, -6); scene.add(rim);
+
+      // ── Solo — disco escuro com leve relevo ───────────────
+      const soilGeo = new THREE.CircleGeometry(16, 80);
+      soilGeo.rotateX(-Math.PI/2);
+      const pos = soilGeo.attributes.position;
+      for (let i=0;i<pos.count;i++){
+        const x=pos.getX(i), z=pos.getZ(i);
+        pos.setY(i, (Math.sin(x*0.5)+Math.cos(z*0.55))*0.12 - 0.05);
+      }
+      soilGeo.computeVertexNormals();
+      const soil = new THREE.Mesh(soilGeo, new THREE.MeshStandardMaterial({ color:0x24160c, roughness:0.96, metalness:0.0 }));
+      scene.add(soil);
+
+      // Glow radial sob o jardim
+      function radialTexture(stop0){
+        const cv = document.createElement('canvas'); cv.width = cv.height = 128;
+        const g = cv.getContext('2d');
+        const grad = g.createRadialGradient(64,64,0, 64,64,64);
+        grad.addColorStop(0, stop0); grad.addColorStop(1, 'rgba(0,0,0,0)');
+        g.fillStyle = grad; g.fillRect(0,0,128,128);
+        return new THREE.CanvasTexture(cv);
+      }
+      const glowDisc = new THREE.Mesh(
+        new THREE.PlaneGeometry(24, 24),
+        new THREE.MeshBasicMaterial({ map:radialTexture('rgba(108,255,122,0.28)'), transparent:true, blending:THREE.AdditiveBlending, depthWrite:false })
+      );
+      glowDisc.rotation.x = -Math.PI/2; glowDisc.position.y = 0.04; scene.add(glowDisc);
+
+      // ── Pólen + estrelas (atmosfera) ──────────────────────
+      const N = 180;
+      const pGeo = new THREE.BufferGeometry();
+      const pArr = new Float32Array(N*3); const pVel = new Float32Array(N);
+      for (let i=0;i<N;i++){
+        pArr[i*3]=(Math.random()-0.5)*22; pArr[i*3+1]=Math.random()*8; pArr[i*3+2]=(Math.random()-0.5)*22;
+        pVel[i]=0.003+Math.random()*0.008;
+      }
+      pGeo.setAttribute('position', new THREE.BufferAttribute(pArr,3));
+      const pollen = new THREE.Points(pGeo, new THREE.PointsMaterial({ color:0xe6d98a, size:0.06, transparent:true, opacity:0.8, blending:THREE.AdditiveBlending, depthWrite:false }));
+      scene.add(pollen);
+
+      const SN = 400; const sGeo = new THREE.BufferGeometry(); const sArr = new Float32Array(SN*3);
+      for (let i=0;i<SN;i++){
+        const r = 40 + Math.random()*50, th = Math.random()*Math.PI*2, ph = Math.acos(2*Math.random()-1);
+        sArr[i*3]=r*Math.sin(ph)*Math.cos(th); sArr[i*3+1]=Math.abs(r*Math.cos(ph))*0.7+3; sArr[i*3+2]=r*Math.sin(ph)*Math.sin(th);
+      }
+      sGeo.setAttribute('position', new THREE.BufferAttribute(sArr,3));
+      const stars = new THREE.Points(sGeo, new THREE.PointsMaterial({ color:0xbcd0e8, size:0.12, sizeAttenuation:true, transparent:true, opacity:0.7, blending:THREE.AdditiveBlending, depthWrite:false }));
+      scene.add(stars);
+
+      // ── Post-processing: Unreal Bloom ─────────────────────
+      const composer = new EffectComposer(renderer);
+      composer.addPass(new RenderPass(scene, camera));
+      const bloom = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.55, 0.6, 0.7);
+      composer.addPass(bloom);
+      composer.addPass(new OutputPass());
+
+      // ── Carga dos modelos glTF ────────────────────────────
+      // Normaliza cada modelo por bounding box e assenta no chão (y=0).
+      const loader = new GLTFLoader();
+      const ovTxt = document.getElementById('ov-txt');
+
+      function load(url){
+        return new Promise((res, rej) => loader.load(url, g => res(g.scene), undefined, rej));
+      }
+      // Escala o objeto para uma altura-alvo e o assenta sobre o solo.
+      function fit(obj, targetH){
+        const box = new THREE.Box3().setFromObject(obj);
+        const size = new THREE.Vector3(); box.getSize(size);
+        const s = targetH / (size.y || 1);
+        obj.scale.setScalar(s);
+        const box2 = new THREE.Box3().setFromObject(obj);
+        const c = new THREE.Vector3(); box2.getCenter(c);
+        obj.position.x -= c.x; obj.position.z -= c.z;
+        obj.position.y -= box2.min.y; // base no chão
+        obj.traverse(o => { if (o.isMesh){ o.castShadow = true; o.receiveShadow = true; if (o.material) o.material.side = THREE.DoubleSide; } });
+        return obj;
+      }
+      function place(obj, x, z, targetH, rotY=Math.random()*Math.PI*2){
+        fit(obj, targetH);
+        obj.position.x += x; obj.position.z += z;
+        obj.rotation.y = rotY;
+        scene.add(obj);
+        return obj;
+      }
+
+      const BASE = './assets/models/';
+      const animated = [];
+
+      (async () => {
+        // Carrega os modelos uma vez e clona para popular o jardim
+        const [arvores, pinheiro, flores, grupoFlores, arbusto] = await Promise.all([
+          load(BASE+'arvores.glb'),
+          load(BASE+'pinheiro.glb'),
+          load(BASE+'flores.glb'),
+          load(BASE+'grupo-flores.glb'),
+          load(BASE+'arbusto-flores.glb'),
+        ]);
+
+        // Árvores grandes ao fundo
+        place(arvores.clone(true),  -5.5, -5.0, 5.2);
+        place(pinheiro.clone(true),  5.8, -5.5, 6.0);
+        place(arvores.clone(true),   7.5, -2.0, 4.6);
+        place(pinheiro.clone(true), -7.5, -3.0, 5.4);
+
+        // Arbustos no meio
+        place(arbusto.clone(true), -3.2, -0.5, 1.4);
+        place(arbusto.clone(true),  3.6,  0.2, 1.2);
+
+        // Tapete de flores em primeiro plano (anel ao redor do centro)
+        const fontes = [flores, grupoFlores];
+        for (let i=0;i<14;i++){
+          const ang = (i/14)*Math.PI*2 + Math.random()*0.3;
+          const rad = 2.2 + Math.random()*3.2;
+          const src = fontes[i%2].clone(true);
+          const f = place(src, Math.cos(ang)*rad, Math.sin(ang)*rad, 0.5 + Math.random()*0.4);
+          f.userData.phase = Math.random()*Math.PI*2;
+          f.userData.baseY = f.position.y;
+          animated.push(f);
+        }
+
+        document.getElementById('loading').classList.add('hide');
+      })().catch(e => {
+        console.error(e);
+        document.getElementById('loading').classList.add('hide');
+        const err = document.getElementById('err'); if (err){ err.classList.remove('hide'); err.style.display='flex'; }
+      });
+
+      // ── Resize ────────────────────────────────────────────
+      window.addEventListener('resize', ()=>{
+        const w=window.innerWidth, h=window.innerHeight;
+        camera.aspect = w/h; camera.updateProjectionMatrix();
+        renderer.setSize(w, h); composer.setSize(w, h);
+      });
+
+      // ── Loop ──────────────────────────────────────────────
+      const clock = new THREE.Clock();
+      function animate(){
+        requestAnimationFrame(animate);
+        const dt = clock.getDelta(); const tt = clock.elapsedTime;
+
+        controls.update();
+
+        if (!reduce){
+          // Flores balançam suavemente como ao vento
+          for (const f of animated){
+            f.rotation.z = Math.sin(tt*1.3 + f.userData.phase)*0.06;
+            f.position.y = f.userData.baseY + Math.sin(tt*1.1 + f.userData.phase)*0.03;
+          }
+        }
+
+        // Pólen sobe e reembaralha
+        const a = pollen.geometry.attributes.position;
+        for (let i=0;i<N;i++){
+          let y = a.getY(i) + pVel[i];
+          if (y > 8){ y = 0; a.setX(i,(Math.random()-0.5)*22); a.setZ(i,(Math.random()-0.5)*22); }
+          a.setY(i, y);
+        }
+        a.needsUpdate = true;
+
+        stars.rotation.y += dt*0.008;
+        stars.material.opacity = 0.55 + Math.sin(tt*1.2)*0.18;
+
+        composer.render();
+      }
+      animate();
+
+    } catch (e) {
+      console.error(e);
+      const l = document.getElementById('loading'); if (l) l.classList.add('hide');
+      const err = document.getElementById('err'); if (err){ err.classList.remove('hide'); err.style.display='flex'; }
+    }
+  </script>
+</body>
+</html>
